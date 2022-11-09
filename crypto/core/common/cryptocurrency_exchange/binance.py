@@ -37,12 +37,8 @@ class BinanceCryptoExchangeFutures:
     def get_account_information(self):
         return self.binance_futures_client.account()
 
-    def get_price_coin_in_futures_binance(self):
-        try:
-            return self.binance_futures_client.mark_price()
-        except binance.error.ClientError as ex:
-            logger.error(ex)
-            return None
+    def get_price_coin_in_futures_binance(self, symbol):
+        return self.binance_futures_client.mark_price(symbol)
 
 
 class BinanceCryptoExchangeConnector:
