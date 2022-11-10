@@ -28,4 +28,5 @@ urlpatterns = [
     path('schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='re-doc'),
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path('api/v1/biance/', include('crypto.binance.urls')),
+    path('api/v1/poloniex/', include('crypto.poloniex.urls')),
 ]

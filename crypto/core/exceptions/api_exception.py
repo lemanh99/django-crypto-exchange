@@ -31,3 +31,4 @@ class CryptoServiceException(CryptoBaseException):
             message_code=None,
     ):
         super(CryptoServiceException, self).__init__(detail, status_code, message_code)
+
