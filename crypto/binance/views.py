@@ -2,8 +2,8 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 
+from crypto.binance.filter_params import binance_filter_params
 from crypto.binance.services import BinanceService
-from crypto.core.common.cryptocurrency_exchange.binance import BinanceCryptoExchangeFutures
 from crypto.core.response import make_response
 
 
@@ -26,6 +26,7 @@ def binance_account_information(request):
 @extend_schema(
     methods=['GET'],
     tags=['binance'],
+    parameters=binance_filter_params,
     description='',
     summary='',
     responses={200: {}},
@@ -34,5 +35,5 @@ def binance_account_information(request):
 @permission_classes([AllowAny])
 def get_funding_rate_binance(request):
     binance_service = BinanceService()
-    data = binance_service.get_funding_rate_binance()
-    return make_response(data=data, app_status=200)
+    status, data = binance_service.get_funding_rate_binance(request.GET)
+    return make_response(data=data, app_status=status)
