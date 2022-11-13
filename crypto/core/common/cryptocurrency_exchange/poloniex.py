@@ -13,8 +13,23 @@ class PoloniexCryptoExchange:
             api_secret=self.secret_key
         )
 
+    def get_markets(self, symbol):
+        if not symbol:
+            return self.poloniex_client.get_markets()
+
+        return self.poloniex_client.get_market(symbol)
+
     def get_market_ticker(self, symbol):
         if not symbol:
             return self.poloniex_client.markets.get_ticker24h_all()
 
         return self.poloniex_client.markets.get_ticker24h(symbol)
+
+    def get_market_price(self, symbol):
+        if not symbol:
+            return self.poloniex_client.markets.get_prices()
+
+        return self.poloniex_client.markets.get_price(symbol)
+
+    def get_market_order_book(self, symbol):
+        return self.poloniex_client.markets.get_orderbook(symbol)

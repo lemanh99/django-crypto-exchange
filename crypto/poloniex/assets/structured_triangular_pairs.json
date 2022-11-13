@@ -1,7 +1,7 @@
 [
     {
         "a_base": "DOGE",
-        "b_base": "DOGE",
+        "b_base": "BTC",
         "c_base": "DOGE",
         "a_quote": "BTC",
         "b_quote": "USDT",
@@ -13,7 +13,7 @@
     },
     {
         "a_base": "DOGE",
-        "b_base": "DOGE",
+        "b_base": "BTC",
         "c_base": "DOGE",
         "a_quote": "BTC",
         "b_quote": "USDD",
@@ -25,7 +25,7 @@
     },
     {
         "a_base": "LTC",
-        "b_base": "LTC",
+        "b_base": "BTC",
         "c_base": "LTC",
         "a_quote": "BTC",
         "b_quote": "USDT",
@@ -37,7 +37,7 @@
     },
     {
         "a_base": "LTC",
-        "b_base": "LTC",
+        "b_base": "BTC",
         "c_base": "LTC",
         "a_quote": "BTC",
         "b_quote": "USDC",
@@ -49,7 +49,7 @@
     },
     {
         "a_base": "LTC",
-        "b_base": "LTC",
+        "b_base": "BTC",
         "c_base": "LTC",
         "a_quote": "BTC",
         "b_quote": "USDD",
@@ -61,7 +61,7 @@
     },
     {
         "a_base": "XMR",
-        "b_base": "XMR",
+        "b_base": "BTC",
         "c_base": "XMR",
         "a_quote": "BTC",
         "b_quote": "USDT",
@@ -73,7 +73,7 @@
     },
     {
         "a_base": "XRP",
-        "b_base": "XRP",
+        "b_base": "BTC",
         "c_base": "XRP",
         "a_quote": "BTC",
         "b_quote": "USDT",
@@ -85,7 +85,7 @@
     },
     {
         "a_base": "XRP",
-        "b_base": "XRP",
+        "b_base": "TRX",
         "c_base": "XRP",
         "a_quote": "BTC",
         "b_quote": "BTC",
@@ -97,7 +97,7 @@
     },
     {
         "a_base": "XRP",
-        "b_base": "XRP",
+        "b_base": "BTC",
         "c_base": "XRP",
         "a_quote": "BTC",
         "b_quote": "USDD",
@@ -121,27 +121,51 @@
     },
     {
         "a_base": "BTC",
-        "b_base": "ETC",
-        "c_base": "ETC",
+        "b_base": "SC",
+        "c_base": "SC",
         "a_quote": "USDT",
         "b_quote": "BTC",
         "c_quote": "USDT",
         "pair_a": "BTC_USDT",
-        "pair_b": "ETC_BTC",
-        "pair_c": "ETC_USDT",
-        "combined": "BTC_USDT,ETC_BTC,ETC_USDT"
+        "pair_b": "SC_BTC",
+        "pair_c": "SC_USDT",
+        "combined": "BTC_USDT,SC_BTC,SC_USDT"
     },
     {
         "a_base": "BTC",
-        "b_base": "ZEC",
-        "c_base": "ZEC",
+        "b_base": "STEEM",
+        "c_base": "STEEM",
         "a_quote": "USDT",
         "b_quote": "BTC",
         "c_quote": "USDT",
         "pair_a": "BTC_USDT",
-        "pair_b": "ZEC_BTC",
-        "pair_c": "ZEC_USDT",
-        "combined": "BTC_USDT,ZEC_BTC,ZEC_USDT"
+        "pair_b": "STEEM_BTC",
+        "pair_c": "STEEM_USDT",
+        "combined": "BTC_USDT,STEEM_BTC,STEEM_USDT"
+    },
+    {
+        "a_base": "BTC",
+        "b_base": "ARDR",
+        "c_base": "ARDR",
+        "a_quote": "USDT",
+        "b_quote": "BTC",
+        "c_quote": "USDT",
+        "pair_a": "BTC_USDT",
+        "pair_b": "ARDR_BTC",
+        "pair_c": "ARDR_USDT",
+        "combined": "BTC_USDT,ARDR_BTC,ARDR_USDT"
+    },
+    {
+        "a_base": "BTC",
+        "b_base": "GAS",
+        "c_base": "GAS",
+        "a_quote": "USDT",
+        "b_quote": "BTC",
+        "c_quote": "USDT",
+        "pair_a": "BTC_USDT",
+        "pair_b": "GAS_BTC",
+        "pair_c": "GAS_USDT",
+        "combined": "BTC_USDT,GAS_BTC,GAS_USDT"
     },
     {
         "a_base": "BTC",
@@ -157,7 +181,7 @@
     },
     {
         "a_base": "BTC",
-        "b_base": "USDT",
+        "b_base": "BTC",
         "c_base": "USDT",
         "a_quote": "USDT",
         "b_quote": "USDC",
@@ -166,18 +190,6 @@
         "pair_b": "BTC_USDC",
         "pair_c": "USDT_USDC",
         "combined": "BTC_USDT,BTC_USDC,USDT_USDC"
-    },
-    {
-        "a_base": "BTC",
-        "b_base": "ATOM",
-        "c_base": "ATOM",
-        "a_quote": "USDT",
-        "b_quote": "BTC",
-        "c_quote": "USDT",
-        "pair_a": "BTC_USDT",
-        "pair_b": "ATOM_BTC",
-        "pair_c": "ATOM_USDT",
-        "combined": "BTC_USDT,ATOM_BTC,ATOM_USDT"
     },
     {
         "a_base": "BTC",
@@ -241,18 +253,6 @@
     },
     {
         "a_base": "BTC",
-        "b_base": "BTC",
-        "c_base": "BTC",
-        "a_quote": "USDT",
-        "b_quote": "USDT",
-        "c_quote": "BUSD",
-        "pair_a": "BTC_USDT",
-        "pair_b": "BUSD_USDT",
-        "pair_c": "BTC_BUSD",
-        "combined": "BTC_USDT,BUSD_USDT,BTC_BUSD"
-    },
-    {
-        "a_base": "BTC",
         "b_base": "DOT",
         "c_base": "DOT",
         "a_quote": "USDT",
@@ -262,18 +262,6 @@
         "pair_b": "DOT_USDT",
         "pair_c": "DOT_BTC",
         "combined": "BTC_USDT,DOT_USDT,DOT_BTC"
-    },
-    {
-        "a_base": "BTC",
-        "b_base": "FUND",
-        "c_base": "FUND",
-        "a_quote": "USDT",
-        "b_quote": "USDT",
-        "c_quote": "BTC",
-        "pair_a": "BTC_USDT",
-        "pair_b": "FUND_USDT",
-        "pair_c": "FUND_BTC",
-        "combined": "BTC_USDT,FUND_USDT,FUND_BTC"
     },
     {
         "a_base": "BTC",
@@ -301,7 +289,7 @@
     },
     {
         "a_base": "BTC",
-        "b_base": "BTC",
+        "b_base": "TUSD",
         "c_base": "BTC",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -310,18 +298,6 @@
         "pair_b": "TUSD_USDT",
         "pair_c": "BTC_TUSD",
         "combined": "BTC_USDT,TUSD_USDT,BTC_TUSD"
-    },
-    {
-        "a_base": "BTC",
-        "b_base": "AVAX",
-        "c_base": "AVAX",
-        "a_quote": "USDT",
-        "b_quote": "USDT",
-        "c_quote": "BTC",
-        "pair_a": "BTC_USDT",
-        "pair_b": "AVAX_USDT",
-        "pair_c": "AVAX_BTC",
-        "combined": "BTC_USDT,AVAX_USDT,AVAX_BTC"
     },
     {
         "a_base": "BTC",
@@ -337,19 +313,7 @@
     },
     {
         "a_base": "BTC",
-        "b_base": "ADA",
-        "c_base": "ADA",
-        "a_quote": "USDT",
-        "b_quote": "USDT",
-        "c_quote": "BTC",
-        "pair_a": "BTC_USDT",
-        "pair_b": "ADA_USDT",
-        "pair_c": "ADA_BTC",
-        "combined": "BTC_USDT,ADA_USDT,ADA_BTC"
-    },
-    {
-        "a_base": "BTC",
-        "b_base": "BTC",
+        "b_base": "USDD",
         "c_base": "BTC",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -361,7 +325,7 @@
     },
     {
         "a_base": "LTC",
-        "b_base": "LTC",
+        "b_base": "USDT",
         "c_base": "LTC",
         "a_quote": "USDT",
         "b_quote": "USDC",
@@ -373,7 +337,7 @@
     },
     {
         "a_base": "LTC",
-        "b_base": "LTC",
+        "b_base": "USDD",
         "c_base": "LTC",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -385,7 +349,7 @@
     },
     {
         "a_base": "XRP",
-        "b_base": "XRP",
+        "b_base": "TRX",
         "c_base": "XRP",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -397,7 +361,7 @@
     },
     {
         "a_base": "XRP",
-        "b_base": "XRP",
+        "b_base": "USDD",
         "c_base": "XRP",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -409,7 +373,7 @@
     },
     {
         "a_base": "ETH",
-        "b_base": "ETH",
+        "b_base": "BTC",
         "c_base": "ETH",
         "a_quote": "BTC",
         "b_quote": "USDC",
@@ -421,7 +385,7 @@
     },
     {
         "a_base": "ETH",
-        "b_base": "ETH",
+        "b_base": "TRX",
         "c_base": "ETH",
         "a_quote": "BTC",
         "b_quote": "BTC",
@@ -433,7 +397,7 @@
     },
     {
         "a_base": "ETH",
-        "b_base": "ETH",
+        "b_base": "BTC",
         "c_base": "ETH",
         "a_quote": "BTC",
         "b_quote": "TUSD",
@@ -445,7 +409,7 @@
     },
     {
         "a_base": "ETH",
-        "b_base": "ETH",
+        "b_base": "BTC",
         "c_base": "ETH",
         "a_quote": "BTC",
         "b_quote": "USDD",
@@ -457,7 +421,7 @@
     },
     {
         "a_base": "ETH",
-        "b_base": "USDT",
+        "b_base": "ETH",
         "c_base": "USDT",
         "a_quote": "USDT",
         "b_quote": "USDC",
@@ -469,7 +433,7 @@
     },
     {
         "a_base": "ETH",
-        "b_base": "ETH",
+        "b_base": "TRX",
         "c_base": "ETH",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -481,7 +445,7 @@
     },
     {
         "a_base": "ETH",
-        "b_base": "ETH",
+        "b_base": "TUSD",
         "c_base": "ETH",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -493,7 +457,7 @@
     },
     {
         "a_base": "ETH",
-        "b_base": "ETH",
+        "b_base": "USDD",
         "c_base": "ETH",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -517,7 +481,7 @@
     },
     {
         "a_base": "DOGE",
-        "b_base": "DOGE",
+        "b_base": "USDD",
         "c_base": "DOGE",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -529,7 +493,7 @@
     },
     {
         "a_base": "BTC",
-        "b_base": "BTC",
+        "b_base": "TUSD",
         "c_base": "BTC",
         "a_quote": "USDC",
         "b_quote": "USDC",
@@ -541,7 +505,7 @@
     },
     {
         "a_base": "BTC",
-        "b_base": "BTC",
+        "b_base": "USDD",
         "c_base": "BTC",
         "a_quote": "USDC",
         "b_quote": "USDC",
@@ -553,7 +517,7 @@
     },
     {
         "a_base": "ETH",
-        "b_base": "ETH",
+        "b_base": "TUSD",
         "c_base": "ETH",
         "a_quote": "USDC",
         "b_quote": "USDC",
@@ -565,7 +529,7 @@
     },
     {
         "a_base": "ETH",
-        "b_base": "ETH",
+        "b_base": "USDD",
         "c_base": "ETH",
         "a_quote": "USDC",
         "b_quote": "USDC",
@@ -613,7 +577,7 @@
     },
     {
         "a_base": "LTC",
-        "b_base": "LTC",
+        "b_base": "USDD",
         "c_base": "LTC",
         "a_quote": "USDC",
         "b_quote": "USDC",
@@ -637,19 +601,7 @@
     },
     {
         "a_base": "TRX",
-        "b_base": "FUND",
-        "c_base": "FUND",
-        "a_quote": "BTC",
-        "b_quote": "TRX",
-        "c_quote": "BTC",
-        "pair_a": "TRX_BTC",
-        "pair_b": "FUND_TRX",
-        "pair_c": "FUND_BTC",
-        "combined": "TRX_BTC,FUND_TRX,FUND_BTC"
-    },
-    {
-        "a_base": "TRX",
-        "b_base": "TRX",
+        "b_base": "BTC",
         "c_base": "TRX",
         "a_quote": "BTC",
         "b_quote": "USDD",
@@ -721,7 +673,7 @@
     },
     {
         "a_base": "TRX",
-        "b_base": "TRX",
+        "b_base": "USDD",
         "c_base": "TRX",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -733,7 +685,7 @@
     },
     {
         "a_base": "ETH",
-        "b_base": "TRX",
+        "b_base": "ETH",
         "c_base": "TRX",
         "a_quote": "TRX",
         "b_quote": "USDD",
@@ -745,7 +697,7 @@
     },
     {
         "a_base": "XRP",
-        "b_base": "XRP",
+        "b_base": "TRX",
         "c_base": "XRP",
         "a_quote": "TRX",
         "b_quote": "USDD",
@@ -757,7 +709,7 @@
     },
     {
         "a_base": "BTT",
-        "b_base": "BTT",
+        "b_base": "USDD",
         "c_base": "BTT",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -769,7 +721,7 @@
     },
     {
         "a_base": "BTT",
-        "b_base": "BTT",
+        "b_base": "TRX",
         "c_base": "BTT",
         "a_quote": "TRX",
         "b_quote": "USDD",
@@ -781,7 +733,7 @@
     },
     {
         "a_base": "WIN",
-        "b_base": "WIN",
+        "b_base": "USDD",
         "c_base": "WIN",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -793,7 +745,7 @@
     },
     {
         "a_base": "JST",
-        "b_base": "JST",
+        "b_base": "USDD",
         "c_base": "JST",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -805,7 +757,7 @@
     },
     {
         "a_base": "JST",
-        "b_base": "JST",
+        "b_base": "TRX",
         "c_base": "JST",
         "a_quote": "TRX",
         "b_quote": "USDD",
@@ -817,7 +769,7 @@
     },
     {
         "a_base": "DOT",
-        "b_base": "DOT",
+        "b_base": "USDD",
         "c_base": "DOT",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -829,7 +781,7 @@
     },
     {
         "a_base": "DOT",
-        "b_base": "DOT",
+        "b_base": "BTC",
         "c_base": "DOT",
         "a_quote": "BTC",
         "b_quote": "USDD",
@@ -841,7 +793,7 @@
     },
     {
         "a_base": "TRU",
-        "b_base": "TRU",
+        "b_base": "TUSD",
         "c_base": "TRU",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -853,7 +805,7 @@
     },
     {
         "a_base": "TUSD",
-        "b_base": "TUSD",
+        "b_base": "USDD",
         "c_base": "TUSD",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -865,7 +817,7 @@
     },
     {
         "a_base": "TUSD",
-        "b_base": "TUSD",
+        "b_base": "USDD",
         "c_base": "TUSD",
         "a_quote": "USDC",
         "b_quote": "USDC",
@@ -877,7 +829,7 @@
     },
     {
         "a_base": "BTC",
-        "b_base": "TUSD",
+        "b_base": "BTC",
         "c_base": "TUSD",
         "a_quote": "TUSD",
         "b_quote": "USDD",
@@ -889,7 +841,7 @@
     },
     {
         "a_base": "ETH",
-        "b_base": "TUSD",
+        "b_base": "ETH",
         "c_base": "TUSD",
         "a_quote": "TUSD",
         "b_quote": "USDD",
@@ -901,7 +853,7 @@
     },
     {
         "a_base": "SHIB",
-        "b_base": "SHIB",
+        "b_base": "USDD",
         "c_base": "SHIB",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -913,7 +865,7 @@
     },
     {
         "a_base": "ELON",
-        "b_base": "ELON",
+        "b_base": "USDD",
         "c_base": "ELON",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -925,7 +877,7 @@
     },
     {
         "a_base": "NFT",
-        "b_base": "NFT",
+        "b_base": "USDD",
         "c_base": "NFT",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -937,7 +889,7 @@
     },
     {
         "a_base": "NFT",
-        "b_base": "NFT",
+        "b_base": "TRX",
         "c_base": "NFT",
         "a_quote": "TRX",
         "b_quote": "USDD",
@@ -949,7 +901,7 @@
     },
     {
         "a_base": "SUN",
-        "b_base": "SUN",
+        "b_base": "USDD",
         "c_base": "SUN",
         "a_quote": "USDT",
         "b_quote": "USDT",
@@ -961,7 +913,7 @@
     },
     {
         "a_base": "BTT",
-        "b_base": "BTT",
+        "b_base": "USDD",
         "c_base": "BTT",
         "a_quote": "USDC",
         "b_quote": "USDC",
@@ -973,7 +925,7 @@
     },
     {
         "a_base": "CHZ",
-        "b_base": "CHZ",
+        "b_base": "USDD",
         "c_base": "CHZ",
         "a_quote": "USDT",
         "b_quote": "USDT",

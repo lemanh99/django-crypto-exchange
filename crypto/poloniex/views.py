@@ -35,5 +35,5 @@ def get_pair_trade_arbitrage(request):
 @permission_classes([AllowAny])
 def trade_arbitrage(request):
     poloniex_service = PoloniexService()
-    data = poloniex_service.trade_arbitrage()
+    data = poloniex_service.trade_arbitrage(request.GET)
     return make_response(data=data, app_status=200)
