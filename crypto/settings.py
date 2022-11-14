@@ -65,7 +65,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
-    "DEFAULT_SCHEMA_CLASS":  "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "crypto.core.exceptions.rest_framework_exception.exception_handler",
 }
 
@@ -242,3 +242,8 @@ SPECTACULAR_SETTINGS = {
 # ---------------------------------------------------------------------------- #
 BINANCE_CRYPTOCURRENCY_EXCHANGE_KEY = env.str('BINANCE_CRYPTOCURRENCY_EXCHANGE_KEY')
 BINANCE_CRYPTOCURRENCY_EXCHANGE_SECRET = env.str('BINANCE_CRYPTOCURRENCY_EXCHANGE_SECRET')
+# ---------------------------------------------------------------------------- #
+#                                    POLONIEX                                  #
+# ---------------------------------------------------------------------------- #
+POLONIEX_CRYPTOCURRENCY_EXCHANGE_KEY = env.str('POLONIEX_CRYPTOCURRENCY_EXCHANGE_KEY')
+POLONIEX_CRYPTOCURRENCY_EXCHANGE_SECRET = env.str('POLONIEX_CRYPTOCURRENCY_EXCHANGE_SECRET')
