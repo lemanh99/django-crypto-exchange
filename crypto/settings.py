@@ -233,7 +233,7 @@ SPECTACULAR_SETTINGS = {
         'defaultModelRendering': 'model',
     },
     'COMPONENT_SPLIT_REQUEST': True,
-    'TITLE': 'Shop API',
+    'TITLE': 'Crypto API',
     'DESCRIPTION': 'The <code>swagger-ui</code> view can be found <a rel="noopener noreferrer" target="_blank" href="/">here</a><br>'
                    'The <code>ReDoc</code> view can be found <a rel="noopener noreferrer" target="_blank" href="/schema/redoc">here</a><br>'
 }
