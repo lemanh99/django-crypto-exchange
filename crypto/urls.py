@@ -29,4 +29,5 @@ urlpatterns = [
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path('api/v1/biance/', include('crypto.binance.urls')),
     path('api/v1/poloniex/', include('crypto.poloniex.urls')),
+    path('api/v1/coingecko/', include('crypto.coingecko.urls')),
 ]
