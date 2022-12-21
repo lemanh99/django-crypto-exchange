@@ -21,6 +21,8 @@ binance-futures-connector = "^3.2.0"
 binance-connector = "^1.18.0"
 GitPython = "^3.1.29"
 websockets = "^10.4"
+pycoingecko = "^3.1.0"
+Babel = "^2.11.0"
 
 [tool.poetry.dev-dependencies]
 
