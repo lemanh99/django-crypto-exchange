@@ -9,3 +9,12 @@ class PoloniexField(str, Enum):
     SYMBOL_TRADE_LIMIT = 'symbolTradeLimit'
     HIGHEST_BID = 'highestBid'
     LOWEST_ASK = 'lowestAsk'
+
+
+class StableCoin(str, Enum):
+    USDD = 'usdd'
+    DAI = 'dai'
+    USDT = 'usdt'
+    USDC = 'usdc'
+    TUSD = 'tusd'
+    BUSD = 'busd'

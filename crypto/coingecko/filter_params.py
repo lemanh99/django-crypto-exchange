@@ -15,3 +15,19 @@ target_pairs = OpenApiParameter(
     default='USDT,BUSD',
     description=''
 )
+
+max_market_cap = OpenApiParameter(
+    'max_market_cap',
+    OpenApiTypes.INT,
+    OpenApiParameter.QUERY,
+    default=1000000000,
+    description=''
+)
+
+number_pages = OpenApiParameter(
+    'number_pages',
+    OpenApiTypes.INT,
+    OpenApiParameter.QUERY,
+    default=1,
+    description=''
+)
