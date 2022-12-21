@@ -58,3 +58,21 @@ def get_coin_exchange_dex(request, exchange_id):
         exchange_id=exchange_id, req_data=request.GET
     )
     return make_response(data=data, app_status=200)
+
+
+@extend_schema(
+    methods=['GET'],
+    tags=['coingecko'],
+    parameters=[],
+    description='',
+    summary='',
+    responses={200: {}},
+)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_same_coin(request):
+    cg_service = CoinGeckoService()
+    data = cg_service.get_same_coin(
+        req_data=request.GET
+    )
+    return make_response(data=data, app_status=200)
