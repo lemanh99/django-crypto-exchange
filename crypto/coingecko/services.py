@@ -1,6 +1,7 @@
 import decimal
 import time
 from datetime import datetime
+from operator import itemgetter
 
 import babel.numbers
 
@@ -115,3 +116,58 @@ class CoinGeckoService:
                 exchange_data=exchange_data,
             ))
         return data
+
+    def get_same_coin(self, req_data):
+        req_data._mutable = True
+        req_data._mutable = True
+        number_pages = 10
+        mexc_coins = {}
+        gate_coins = {}
+        for number_page in range(2, number_pages + 1):
+            print(number_page)
+            req_data['page'] = number_page
+            mexc_coins_markets = self.cg_market.get_exchange_ticket('mxc', req_data)
+            gate_coins_markets = self.cg_market.get_exchange_ticket('gate', req_data)
+            mexc_tickers = mexc_coins_markets.get('tickers')
+            gate_tickers = gate_coins_markets.get('tickers')
+            for mexc_ticker in mexc_tickers:
+                mexc_coins.update({
+                    f'{mexc_ticker.get("base")}/{mexc_ticker.get("target")}': dict(
+                        spread=f'{round(mexc_ticker.get("bid_ask_spread_percentage"), 5)}%',
+                        price_last=mexc_ticker['last'],
+                        price_high=float(mexc_ticker['last']) + float(mexc_ticker['last']) * round(
+                            float(mexc_ticker.get("bid_ask_spread_percentage")), 5
+                        ))
+                })
+
+            for gate_ticker in gate_tickers:
+                gate_coins.update({
+                    f'{gate_ticker.get("base")}/{gate_ticker.get("target")}': dict(
+                        spread=f'{round(gate_ticker.get("bid_ask_spread_percentage"), 5)}%',
+                        price_last=gate_ticker['last'],
+                        price_high=float(gate_ticker['last']) + float(gate_ticker['last']) * round(
+                            float(gate_ticker.get("bid_ask_spread_percentage")), 5
+                        ))
+                })
+
+        information_coins = []
+        for pair in list(set(mexc_coins).intersection(gate_coins)):
+            round_price = round(mexc_coins[pair].get('price_last'))
+            division_factor = 10 ** (len(str(round_price))) if round_price > 0 else 1
+            information_coins.append({
+                "price_last": abs(
+                    float(mexc_coins[pair].get('price_last')) - float(
+                        gate_coins[pair].get('price_last'))) / division_factor,
+                "cal": abs(
+                    float(mexc_coins[pair].get('price_last')) - float(gate_coins[pair].get('price_last'))
+                ) * 40 / division_factor,
+                pair: {
+                    "price_last": float(mexc_coins[pair].get('price_last')) - float(gate_coins[pair].get('price_last')),
+                    "price_last_high": float(mexc_coins[pair].get('price_high')) - float(
+                        gate_coins[pair].get('price_high')
+                    ),
+                    "detail": [dict(mexc=mexc_coins.get(pair)), dict(gate=gate_coins.get(pair))],
+
+                },
+            })
+        return sorted(information_coins, key=itemgetter('price_last'), reverse=True)
