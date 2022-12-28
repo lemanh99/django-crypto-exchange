@@ -30,4 +30,5 @@ urlpatterns = [
     path('api/v1/biance/', include('crypto.binance.urls')),
     path('api/v1/poloniex/', include('crypto.poloniex.urls')),
     path('api/v1/coingecko/', include('crypto.coingecko.urls')),
+    path('api/v1/tracking/', include('crypto.tracking.urls')),
 ]

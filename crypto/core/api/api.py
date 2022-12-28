@@ -50,3 +50,26 @@ class BaseApiProxy(ABC):
             return self
         except Exception as ex:
             raise CryptoServiceException(message_code=repr(ex))
+
+
+class EtherscanApi(BaseApiProxy):
+    def __init__(
+            self,
+            service_endpoint,
+            method="GET",
+            headers=None,
+            params=None,
+            data=None,
+            json=None,
+            api_key=None,
+    ):
+        super().__init__()
+        self.api_name = "Etherscan"
+        self.service_uri = "https://api.etherscan.io" + "/" + service_endpoint
+        self.method = method
+        self.headers = headers
+        self.params = dict(**params, apikey=api_key) if params else dict(apikey=api_key)
+        self.data = data
+        self.json = json
+        self.result = None
+        self.status_code = HTTP_200_OK
