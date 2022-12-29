@@ -250,4 +250,8 @@ POLONIEX_CRYPTOCURRENCY_EXCHANGE_SECRET = env.str('POLONIEX_CRYPTOCURRENCY_EXCHA
 # ---------------------------------------------------------------------------- #
 #                                    ETHERSCAN                                  #
 # ---------------------------------------------------------------------------- #
-ETHERSCAN_API_KEY = env.str('ETHERSCAN_API_KEY')
+ETHERSCAN_API_KEY = env.str('ETHERSCAN_API_KEY', '')
+# ---------------------------------------------------------------------------- #
+#                                    BLOCKCHAIR                                  #
+# ---------------------------------------------------------------------------- #
+BLOCKCHAIR_API_KEY = env.str('BLOCKCHAIR_API_KEY', '')
