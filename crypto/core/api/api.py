@@ -91,8 +91,11 @@ class BlockchairApi(BaseApiProxy):
         self.service_uri = "https://api.blockchair.com" + "/" + service_endpoint
         self.method = method
         self.headers = headers
-        # self.params = dict(**params, key=api_key) if params else dict(key=api_key)
         self.data = data
         self.json = json
         self.result = None
         self.status_code = HTTP_200_OK
+        if api_key:
+            self.params = dict(**params, key=api_key) if params else dict(key=api_key)
+        else:
+            self.params = dict(**params)

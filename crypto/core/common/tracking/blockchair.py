@@ -10,7 +10,7 @@ class BlockChairTracking:
             self,
             token_address,
             holder_address,
-            limit=10,
+            limit=50,
             offset=0
     ):
         """

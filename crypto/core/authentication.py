@@ -10,4 +10,4 @@ class CustomJWTAuthentication(JWTAuthentication):
     TYPE = "https"
     SCHEME = "bearer"
     BEARER_FORMAT = settings.AUTH_HEADER_TYPES
-    keyword = "Token"
+    KEYWORD = "Token"
