@@ -28,3 +28,6 @@ class CoinGeckoMarketApi(CoinGeckoAPI):
             # 'order': params.get('volume_asc', ""),
         }
         return self.get_exchanges_tickers_by_id(exchange_id, **filter_params)
+
+    def get_contact_information(self, platform, contract_address):
+        return self.get_coin_info_from_contract_address_by_id(platform, contract_address)
