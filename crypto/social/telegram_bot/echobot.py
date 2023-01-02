@@ -1,6 +1,8 @@
 import logging
 
 from django.conf import settings
+from django.template import Context
+from django.template.loader import get_template
 from telegram import Update, ForceReply, ReplyKeyboardMarkup, InlineKeyboardMarkup
 from telegram.ext import Updater, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
 
@@ -29,9 +31,6 @@ def echo(update: Update, _: CallbackContext) -> None:
     """Echo the user message."""
     text = update.message.text
     print(f"Actions echo:{text}")
-    print(f"{update.to_json()}")
-    chat_id = update.message.chat_id
-    user_name = update.message.from_user.full_name
     # Todo save profile username
     # tele_user_obj = TelegramUser.subscribe(chat_id, user_name)
     # user_recent_searches = tele_user_obj.get_recent_searches(1)
@@ -65,7 +64,8 @@ def echo(update: Update, _: CallbackContext) -> None:
 def callback_echo(update, context):
     query = update.callback_query
     query_data = query.data
-    print(f"Query callback {query}")
+    print("callback_echo", query_data)
+    chat_id = query.message.chat.id
     telegram_service = TelegramService()
     if telegram_service.is_token_address_available(text=query_data):
         reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
@@ -74,12 +74,16 @@ def callback_echo(update, context):
         reply_markup = InlineKeyboardMarkup(reply_keyboard)
         query.edit_message_text(text=f"You have selected {query_data}, {reply_text}", reply_markup=reply_markup)
     elif "_" in query_data:
-        reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+        query.edit_message_text(text=f"You select exchange {query_data}", parse_mode='HTML')
+
+        data_analysis, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.ANALYSIS_CRYPTO_DATA, text=query_data
         )
-        reply_markup = InlineKeyboardMarkup(reply_keyboard)
-        print(reply_text)
-        query.edit_message_text(text=f"{reply_text}", reply_markup=reply_markup)
+        template = get_template("telegram/information_analysis_data.html")
+        for data in data_analysis:
+            render_context = Context(dict(**data))
+            html = template.template.render(render_context)
+            context.bot.send_message(chat_id=chat_id, text=str(html), parse_mode='HTML')
     else:
         query.answer(text=f"Please select again !")
 
