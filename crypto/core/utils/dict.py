@@ -11,3 +11,7 @@ def get_list_dict_in_list_by_value(key, value, my_dictlist):
         if entry[key] == value:
             list_item.append(entry)
     return list_item
+
+
+def get_list_in_dict_by_key(key, my_dictlist):
+    return [entry[key] for entry in my_dictlist]

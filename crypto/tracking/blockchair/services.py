@@ -71,7 +71,7 @@ class BlockchairService:
             number_out_exchange=number_out_exchange,
             value_big_order=value_big_order,
             number_big_order=number_big_order,
-            transaction_history=data_analysis,
+            # transaction_history=data_analysis,
         )
 
     def get_history_transaction(self, req_data):
