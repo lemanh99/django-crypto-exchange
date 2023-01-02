@@ -4,5 +4,11 @@
     "name": "Binance 14",
     "address": "0x28c6c06298d514db089934071355e5743bf21d60",
     "exchange": "Binance"
+  },
+  {
+    "exchange_id": "bybit",
+    "name": "Bybit",
+    "address": "0xf89d7b9c864f589bbf53a82105107622b35eaa40",
+    "exchange": "Bybit"
   }
 ]

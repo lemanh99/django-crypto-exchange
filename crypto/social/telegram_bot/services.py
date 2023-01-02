@@ -1,8 +1,9 @@
 from django.conf import settings
 from telegram import InlineKeyboardButton
 
-from crypto.core.utils.dict import get_list_in_dict_by_key, get_dict_in_list
+from crypto.core.utils.dict import get_dict_in_list
 from crypto.core.utils.json import get_data_file_json
+from crypto.core.utils.string import convert_string_to_money
 from crypto.social.telegram_bot.contants import CommandsEnum, Position, Message, MenuTelegram
 from crypto.tracking.blockchair.services import BlockchairService
 
@@ -21,11 +22,13 @@ class TelegramService:
         return reply_text, reply_keyboard
 
     def get_action_start(self, **kwargs):
+        print(f"Telegram Service: get_action_start")
         reply_text = Message.WELCOME_TEXT
         reply_keyboard = self.append_to_reply_keyboard(MenuTelegram.REPLY_KEYBOARDS.value.get("default"), [])
         return reply_text, reply_keyboard
 
     def get_action_select_token(self, **kwargs):
+        print(f"Telegram Service: get_action_select_token")
         file_name = f"{settings.BASE_DIR}/crypto/assets/token_exchange.json"
         tokens_address = get_data_file_json(file_name)
         reply_text = Message.SELECT_TOKEN
@@ -33,32 +36,66 @@ class TelegramService:
         return reply_text, reply_keyboard
 
     def get_action_select_crypto_exchange(self, **kwargs):
+        print(f"Telegram Service: get_action_select_crypto_exchange")
         symbol_token = kwargs.get("text")
         reply_text = Message.SELECT_CRYPTO_EXCHANGE
         file_name = f"{settings.BASE_DIR}/crypto/assets/crypto_exchange_address.json"
         crypto_exchanges = get_data_file_json(file_name)
         exchange_data = [dict(
             exchange=crypto_exchange.get("exchange"),
-            exchange_id=f"{symbol_token.lower()}_{crypto_exchange.get('exchange_id')}"
+            exchange_id=f"{symbol_token}_{crypto_exchange.get('exchange_id')}"
         ) for crypto_exchange in crypto_exchanges]
+        exchange_data.append(dict(
+            exchange=CommandsEnum.ALL,
+            exchange_id=f"{symbol_token}_{CommandsEnum.ALL}"
+        ))
         reply_keyboard = self.create_reply_inline_keyboard(exchange_data,
                                                            key_name="exchange",
                                                            key_callback="exchange_id")
         return reply_text, reply_keyboard
 
     def get_action_analysis_crypto_exchange(self, **kwargs):
+        print(f"Telegram Service: get_action_analysis_crypto_exchange")
         text = kwargs.get("text")
         symbol_token, exchange_id = text.split("_")[0], text.split("_")[1]
         file_name = f"{settings.BASE_DIR}/crypto/assets/token_exchange.json"
         tokens_address = get_data_file_json(file_name)
         token = get_dict_in_list(key="symbol", value=symbol_token, my_dictlist=tokens_address)
-        req_data = {
-            "token_address": token.get("address"),
-            "exchange_id": exchange_id
-        }
+        response_data = []
+        if CommandsEnum.ALL in exchange_id:
+            file_name = f"{settings.BASE_DIR}/crypto/assets/crypto_exchange_address.json"
+            crypto_exchanges = get_data_file_json(file_name)
+        else:
+            crypto_exchanges = [dict(exchange_id=exchange_id)]
+
+        for crypto_exchange in crypto_exchanges:
+            req_data = {
+                "token_address": token.get("address"),
+                "exchange_id": crypto_exchange.get("exchange_id"),
+                "min_order_exchange": 50000,
+                "time_ago": 60 * 24,
+            }
+            data = self.get_data_analysis_crypto_exchange(req_data)
+            response_data.extend(data)
+        return response_data, None
+
+    @classmethod
+    def get_data_analysis_crypto_exchange(cls, req_data):
         blockchair = BlockchairService()
-        reply_text = blockchair.get_analysis_token_by_exchange(req_data)
-        return reply_text, []
+        data_analysis = blockchair.get_analysis_token_by_exchange(req_data)
+        response_data = []
+        for data in data_analysis:
+            response_data.append(dict(
+                name_exchange=data.get("name_exchange"),
+                value_exchange=convert_string_to_money(data.get("value_exchange", 0)),
+                value_in_exchange=convert_string_to_money(data.get("value_in_exchange", 0)),
+                value_out_exchange=convert_string_to_money(data.get("value_out_exchange", 0)),
+                number_in_exchange=data.get("number_in_exchange"),
+                number_out_exchange=data.get("number_out_exchange"),
+                value_big_order=data.get("value_big_order"),
+                number_big_order=data.get("number_big_order"),
+            ))
+        return response_data
 
     @staticmethod
     def is_token_address_available(**kwargs):
