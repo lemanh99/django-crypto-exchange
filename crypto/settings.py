@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'corsheaders',
     'crypto.core',
-    'crypto.binance'
+    'crypto.binance',
+    'crypto.master'
 ]
 
 MIDDLEWARE = [
@@ -92,20 +93,32 @@ WSGI_APPLICATION = 'crypto.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': env.str('DB_ENGINE'),
-        'NAME': env.str('DB_NAME'),
-        'USER': env.str('DB_USER'),
-        'PASSWORD': env.str('DB_PASSWORD'),
-        'HOST': env.str('DB_HOST'),
-        'PORT': env.int('DB_PORT'),
-        'OPTIONS': {
-            "init_command": "SET foreign_key_checks = 0; SET sql_mode='STRICT_TRANS_TABLES'",
-            "charset": "utf8mb4",
-        }
-    }
-}
+# if not env.str('DATABASE_MONGODB_CONFIG', True):
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': env.str('DB_ENGINE'),
+#             'NAME': env.str('DB_NAME'),
+#             'USER': env.str('DB_USER'),
+#             'PASSWORD': env.str('DB_PASSWORD'),
+#             'HOST': env.str('DB_HOST'),
+#             'PORT': env.int('DB_PORT'),
+#             'OPTIONS': {
+#                 "init_command": "SET foreign_key_checks = 0; SET sql_mode='STRICT_TRANS_TABLES'",
+#                 "charset": "utf8mb4",
+#             }
+#         }
+#     }
+# else:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': env.str('DB_ENGINE'),
+#             'NAME': env.str('DB_NAME'),
+#             'ENFORCE_SCHEMA': False,
+#             'CLIENT': {
+#                 'host': env.str('DB_HOST')
+#             }
+#         }
+#     }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -255,3 +268,8 @@ ETHERSCAN_API_KEY = env.str('ETHERSCAN_API_KEY', '')
 #                                    BLOCKCHAIR                                  #
 # ---------------------------------------------------------------------------- #
 BLOCKCHAIR_API_KEY = env.str('BLOCKCHAIR_API_KEY', '')
+
+# ---------------------------------------------------------------------------- #
+#                                    TELEGRAM BOT                                  #
+# ---------------------------------------------------------------------------- #
+TELEGRAM_BOT_API_KEY = env.str('TELEGRAM_BOT_API_KEY', '')
