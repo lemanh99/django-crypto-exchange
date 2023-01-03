@@ -1,7 +1,7 @@
 from django.conf import settings
 from telegram import InlineKeyboardButton
 
-from crypto.core.utils.dict import get_dict_in_list
+from crypto.core.utils.dict import get_dict_in_list, get_unique_list_of_dict
 from crypto.core.utils.json import get_data_file_json
 from crypto.core.utils.string import convert_string_to_money
 from crypto.social.telegram_bot.contants import CommandsEnum, Position, Message, MenuTelegram, TimeExchange
@@ -46,6 +46,7 @@ class TelegramService:
             exchange=crypto_exchange.get("exchange"),
             exchange_id=f"{information_exchange_text}_{crypto_exchange.get('exchange_id')}"
         ) for crypto_exchange in crypto_exchanges]
+        exchange_data = get_unique_list_of_dict(exchange_data)
         exchange_data.append(dict(
             exchange=CommandsEnum.ALL,
             exchange_id=f"{information_exchange_text}_{CommandsEnum.ALL}"
@@ -112,6 +113,8 @@ class TelegramService:
                 number_in_big_order=data.get("number_in_big_order"),
                 value_out_big_order=data.get("value_out_big_order"),
                 number_out_big_order=data.get("number_out_big_order"),
+                datetime_to=data.get("datetime_to"),
+                datetime_from=data.get("datetime_from"),
             ))
         return response_data
 

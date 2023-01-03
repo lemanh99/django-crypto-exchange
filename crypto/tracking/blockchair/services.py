@@ -81,8 +81,9 @@ class BlockchairService:
             number_out_big_order=number_out_big_order,
             value_big_order=value_in_big_order + value_out_big_order,
             transaction_history=data_analysis,
-            datetime_to=datetime_now.strftime("%d-%m-%Y, %H:%M:%S"),
-            datetime_from=datetime_from.strftime("%d-%m-%Y, %H:%M:%S") if datetime_from else None
+            datetime_to=datetime_now.astimezone(pytz.timezone('Asia/Ho_Chi_Minh')).strftime("%H:%M:%S %d-%m-%Y"),
+            datetime_from=datetime_from.astimezone(pytz.timezone('Asia/Ho_Chi_Minh')).strftime(
+                "%H:%M:%S %d-%m-%Y") if datetime_from else None
         )
 
     def get_history_transaction(self, req_data):

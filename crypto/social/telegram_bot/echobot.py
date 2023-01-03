@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.template import Context
 from django.template.loader import get_template
-from telegram import Update, ForceReply, ReplyKeyboardMarkup, InlineKeyboardMarkup
+from telegram import Update, ForceReply, ReplyKeyboardMarkup, InlineKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
 
 from crypto.social.telegram_bot.contants import Message, CommandsEnum, MenuTelegram
@@ -24,6 +24,14 @@ def start(update: Update, _: CallbackContext) -> None:
 def help_command(update: Update, _: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
     update.message.reply_text('Help!')
+
+
+def remove_chat_buttons(bot, chat_id: int, text: str):
+    """Deletes buttons below the chat.
+    For now there are no way to delete kbd other than inline one, check
+        https://core.telegram.org/bots/api#updating-messages.
+    """
+    bot.send_message(chat_id, text=text, reply_markup=ReplyKeyboardRemove())
 
 
 def echo(update: Update, _: CallbackContext) -> None:
@@ -47,11 +55,14 @@ def echo(update: Update, _: CallbackContext) -> None:
         reply_markup = ReplyKeyboardMarkup(reply_keyboard, )
     elif text == CommandsEnum.HELP:
         reply_text = Message.HELP_TEXT
-    elif text == CommandsEnum.TOKEN:
+    elif text in [CommandsEnum.TOKEN, '/token']:
+        remove_chat_buttons(bot=update.message.bot, chat_id=update.message.chat_id, text="Hi !!")
         reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.TOKEN
         )
         reply_markup = InlineKeyboardMarkup(reply_keyboard)
+    elif text == CommandsEnum.CANCEL:
+        remove_chat_buttons(update.message.bot, update.message.chat_id, text=Message.GOODBYE)
     else:
         reply_text = Message.UNKNOWN_COMMAND.format(text=text)
 
