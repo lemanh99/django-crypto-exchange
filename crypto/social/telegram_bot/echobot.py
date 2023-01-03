@@ -65,6 +65,7 @@ def callback_echo(update, context):
     query = update.callback_query
     query_data = query.data
     print("callback_echo", query_data)
+    print("Debug: Data callback", query)
     chat_id = query.message.chat.id
     telegram_service = TelegramService()
     if telegram_service.is_token_address_available(text=query_data):
@@ -73,9 +74,15 @@ def callback_echo(update, context):
         )
         reply_markup = InlineKeyboardMarkup(reply_keyboard)
         query.edit_message_text(text=f"You have selected {query_data}, {reply_text}", reply_markup=reply_markup)
-    elif "_" in query_data:
-        query.edit_message_text(text=f"You select exchange {query_data}", parse_mode='HTML')
-
+    elif "_" in query_data and query_data.count('_') == 1:
+        reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+            text_command=CommandsEnum.TIME_EXCHANGE, text=query_data
+        )
+        reply_markup = InlineKeyboardMarkup(reply_keyboard)
+        query.edit_message_text(text=f"You have selected {query_data.replace('_', '-')}, {reply_text}",
+                                reply_markup=reply_markup)
+    elif "_" in query_data and query_data.count('_') == 2:
+        query.edit_message_text(text=f"You select exchange {query_data.replace('_', '-')}", parse_mode='HTML')
         data_analysis, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.ANALYSIS_CRYPTO_DATA, text=query_data
         )

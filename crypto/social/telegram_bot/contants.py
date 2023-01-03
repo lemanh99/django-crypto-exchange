@@ -10,6 +10,7 @@ class CommandsEnum(str, Enum):
     TOKEN = "Token"
     CRYPTO_EXCHANGE = "Crypto Exchange"
     ANALYSIS_CRYPTO_DATA = "analysis crypto data"
+    TIME_EXCHANGE = "Time exchange"
     ALL = "All"
 
 
@@ -33,4 +34,21 @@ class Message(str, Enum):
     HELP_TEXT = "How can i help you."
     SELECT_TOKEN = "please select token"
     SELECT_CRYPTO_EXCHANGE = "please select crypto exchange"
+    SELECT_TIME_EXCHANGE = "please select crypto exchange time"
     UNKNOWN_COMMAND = "OOps...We didn't recognise the command: {text}"
+
+
+class TimeExchange(Enum):
+    FIVE_MINUTES = 5, "5 minutes"
+    THIRTY_MINUTES = 30, "30 minutes"
+    ONE_HOUR = 60, "1 hours"
+    TWELVE_HOUR = 12 * 60, "12 hours"
+    TWENTY_FOUR_HOUR = 24 * 60, "24 hours"
+
+    @property
+    def minutes(self):
+        return self.value[0]
+
+    @property
+    def name(self):
+        return self.value[1]

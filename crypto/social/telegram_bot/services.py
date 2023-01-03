@@ -4,7 +4,7 @@ from telegram import InlineKeyboardButton
 from crypto.core.utils.dict import get_dict_in_list
 from crypto.core.utils.json import get_data_file_json
 from crypto.core.utils.string import convert_string_to_money
-from crypto.social.telegram_bot.contants import CommandsEnum, Position, Message, MenuTelegram
+from crypto.social.telegram_bot.contants import CommandsEnum, Position, Message, MenuTelegram, TimeExchange
 from crypto.tracking.blockchair.services import BlockchairService
 
 
@@ -16,6 +16,7 @@ class TelegramService:
             CommandsEnum.START: lambda: self.get_action_start(**kwargs),
             CommandsEnum.TOKEN: lambda: self.get_action_select_token(**kwargs),
             CommandsEnum.CRYPTO_EXCHANGE: lambda: self.get_action_select_crypto_exchange(**kwargs),
+            CommandsEnum.TIME_EXCHANGE: lambda: self.get_action_get_time_exchange(**kwargs),
             CommandsEnum.ANALYSIS_CRYPTO_DATA: lambda: self.get_action_analysis_crypto_exchange(**kwargs)
         }
         reply_text, reply_keyboard = commands.get(text_command)()
@@ -37,27 +38,40 @@ class TelegramService:
 
     def get_action_select_crypto_exchange(self, **kwargs):
         print(f"Telegram Service: get_action_select_crypto_exchange")
-        symbol_token = kwargs.get("text")
+        information_exchange_text = kwargs.get("text")
         reply_text = Message.SELECT_CRYPTO_EXCHANGE
         file_name = f"{settings.BASE_DIR}/crypto/assets/crypto_exchange_address.json"
         crypto_exchanges = get_data_file_json(file_name)
         exchange_data = [dict(
             exchange=crypto_exchange.get("exchange"),
-            exchange_id=f"{symbol_token}_{crypto_exchange.get('exchange_id')}"
+            exchange_id=f"{information_exchange_text}_{crypto_exchange.get('exchange_id')}"
         ) for crypto_exchange in crypto_exchanges]
         exchange_data.append(dict(
             exchange=CommandsEnum.ALL,
-            exchange_id=f"{symbol_token}_{CommandsEnum.ALL}"
+            exchange_id=f"{information_exchange_text}_{CommandsEnum.ALL}"
         ))
         reply_keyboard = self.create_reply_inline_keyboard(exchange_data,
                                                            key_name="exchange",
                                                            key_callback="exchange_id")
         return reply_text, reply_keyboard
 
+    def get_action_get_time_exchange(self, **kwargs):
+        print(f"Telegram Service: get_action_get_time_exchange")
+        symbol_token = kwargs.get("text")
+        reply_text = Message.SELECT_TIME_EXCHANGE
+        times = [dict(
+            time=time_exchange.name,
+            keyword=f"{symbol_token}_{str(time_exchange.minutes)}"
+        ) for time_exchange in TimeExchange]
+        reply_keyboard = self.create_reply_inline_keyboard(times,
+                                                           key_name="time",
+                                                           key_callback="keyword")
+        return reply_text, reply_keyboard
+
     def get_action_analysis_crypto_exchange(self, **kwargs):
         print(f"Telegram Service: get_action_analysis_crypto_exchange")
         text = kwargs.get("text")
-        symbol_token, exchange_id = text.split("_")[0], text.split("_")[1]
+        symbol_token, exchange_id, time_ago = text.split("_")[0], text.split("_")[1], text.split("_")[2]
         file_name = f"{settings.BASE_DIR}/crypto/assets/token_exchange.json"
         tokens_address = get_data_file_json(file_name)
         token = get_dict_in_list(key="symbol", value=symbol_token, my_dictlist=tokens_address)
@@ -73,7 +87,7 @@ class TelegramService:
                 "token_address": token.get("address"),
                 "exchange_id": crypto_exchange.get("exchange_id"),
                 "min_order_exchange": 50000,
-                "time_ago": 60 * 24,
+                "time_ago": int(time_ago),
             }
             data = self.get_data_analysis_crypto_exchange(req_data)
             response_data.extend(data)
@@ -86,6 +100,7 @@ class TelegramService:
         response_data = []
         for data in data_analysis:
             response_data.append(dict(
+                price_token=data.get("price_token"),
                 name_exchange=data.get("name_exchange"),
                 value_exchange=convert_string_to_money(data.get("value_exchange", 0)),
                 value_in_exchange=convert_string_to_money(data.get("value_in_exchange", 0)),
@@ -93,7 +108,10 @@ class TelegramService:
                 number_in_exchange=data.get("number_in_exchange"),
                 number_out_exchange=data.get("number_out_exchange"),
                 value_big_order=data.get("value_big_order"),
-                number_big_order=data.get("number_big_order"),
+                value_in_big_order=data.get("value_in_big_order"),
+                number_in_big_order=data.get("number_in_big_order"),
+                value_out_big_order=data.get("value_out_big_order"),
+                number_out_big_order=data.get("number_out_big_order"),
             ))
         return response_data
 
