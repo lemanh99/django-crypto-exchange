@@ -26,7 +26,8 @@ class BlockchairService:
         name_exchange = data_hold.get("exchange")
         value_in_exchange, value_out_exchange = 0, 0
         number_in_exchange, number_out_exchange = 0, 0
-        value_big_order, number_big_order = 0, 0
+        value_in_big_order, value_out_big_order = 0, 0
+        number_in_big_order, number_out_big_order = 0, 0
         data_analysis = []
 
         for transaction_history in transaction_histories:
@@ -54,24 +55,35 @@ class BlockchairService:
             if sender_address == holder_address:
                 value_out_exchange = value_out_exchange + value_usd
                 number_out_exchange = number_out_exchange + 1
+                if min_order_exchange and value_usd > float(min_order_exchange):
+                    value_out_big_order = value_out_big_order + value_usd
+                    number_out_big_order = number_out_big_order + 1
             else:
                 value_in_exchange = value_in_exchange + value_usd
                 number_in_exchange = number_in_exchange + 1
+                if min_order_exchange and value_usd > float(min_order_exchange):
+                    value_in_big_order = value_in_big_order + value_usd
+                    number_in_big_order = number_in_big_order + 1
 
-            if min_order_exchange and value_usd > float(min_order_exchange):
-                value_big_order = value_big_order + value_usd
-                number_big_order = number_big_order + 1
-
+        datetime_now = datetime.now(pytz.utc)
+        datetime_from = datetime.now(pytz.utc) - timedelta(minutes=int(time_ago)) if time_ago else None
         return dict(
+            price_token=price_token,
             name_exchange=name_exchange,
             value_exchange=value_in_exchange + value_out_exchange,
             value_in_exchange=value_in_exchange,
             value_out_exchange=value_out_exchange,
             number_in_exchange=number_in_exchange,
             number_out_exchange=number_out_exchange,
-            value_big_order=value_big_order,
-            number_big_order=number_big_order,
+            value_in_big_order=value_in_big_order,
+            number_in_big_order=number_in_big_order,
+            value_out_big_order=value_out_big_order,
+            number_out_big_order=number_out_big_order,
+            value_big_order=value_in_big_order + value_out_big_order,
             transaction_history=data_analysis,
+            datetime_to=datetime_now.astimezone(pytz.timezone('Asia/Ho_Chi_Minh')).strftime("%H:%M:%S %d-%m-%Y"),
+            datetime_from=datetime_from.astimezone(pytz.timezone('Asia/Ho_Chi_Minh')).strftime(
+                "%H:%M:%S %d-%m-%Y") if datetime_from else None
         )
 
     def get_history_transaction(self, req_data):
@@ -126,15 +138,16 @@ class BlockchairService:
         else:
             return dict(error="Address exchange empty")
 
+        coingecko_api = CoinGeckoMarketApi()
+        contract_information = coingecko_api.get_contact_information("ethereum", token_address)
+        tickets = contract_information.get("tickers")
+        if not tickets:
+            return {}
+
+        price = float(tickets[0].get("last"))
+
         data_analysis = []
         for data_hold in data_holds:
-            coingecko_api = CoinGeckoMarketApi()
-            contract_information = coingecko_api.get_contact_information("ethereum", token_address)
-            tickets = contract_information.get("tickers")
-            if not tickets:
-                return {}
-
-            price = float(tickets[0].get("last"))
             holder_address = data_hold.get("address")
             etherscan_tracking = BlockChairTracking()
             status, result = etherscan_tracking.get_history_transaction_holder_erc20_token(

@@ -6,9 +6,33 @@
     "exchange": "Binance"
   },
   {
+    "exchange_id": "binance",
+    "name": "Binance 15",
+    "address": "0x21a31ee1afc51d94c2efccaa2092ad1028285549",
+    "exchange": "Binance"
+  },
+  {
     "exchange_id": "bybit",
     "name": "Bybit",
     "address": "0xf89d7b9c864f589bbf53a82105107622b35eaa40",
     "exchange": "Bybit"
+  },
+  {
+    "exchange_id": "coinbase",
+    "name": "Coinbase 10",
+    "address": "0xa9d1e08c7793af67e9d92fe308d5697fb81d3e43",
+    "exchange": "Coinbase"
+  },
+  {
+    "exchange_id": "huobi",
+    "name": "Huobi 10",
+    "address": "0xe93381fb4c4f14bda253907b18fad305d799241a",
+    "exchange": "Huobi"
+  },
+  {
+    "exchange_id": "kucoin",
+    "name": "KuCoin 9",
+    "address": "0xf16e9b0d03470827a95cdfd0cb8a8a3b46969b91",
+    "exchange": "Kucoin"
   }
 ]
