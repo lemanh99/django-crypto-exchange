@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class CommandsEnum(str, Enum):
-    START = 'Start'
+    START = 'start'
     HELP = 'Help'
     MORE_OPTIONS = "More Options"
     BACK_BUTTON_PRETEXT = "Back TO << "
@@ -43,6 +43,8 @@ class TimeExchange(Enum):
     FIVE_MINUTES = 5, "5 minutes"
     THIRTY_MINUTES = 30, "30 minutes"
     ONE_HOUR = 60, "1 hours"
+    THREE_HOUR = 3 * 60, "3 hours"
+    SIX_HOUR = 6 * 60, "6 hours"
     TWELVE_HOUR = 12 * 60, "12 hours"
     TWENTY_FOUR_HOUR = 24 * 60, "24 hours"
 

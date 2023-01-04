@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from telegram import InlineKeyboardButton
 
@@ -7,11 +9,13 @@ from crypto.core.utils.string import convert_string_to_money
 from crypto.social.telegram_bot.contants import CommandsEnum, Position, Message, MenuTelegram, TimeExchange
 from crypto.tracking.blockchair.services import BlockchairService
 
+logger = logging.getLogger(__name__)
+
 
 class TelegramService:
 
     def get_message_and_keyboards_by_text_command(self, text_command, **kwargs):
-        print(f"Telegram Service: get_message_and_keyboards_by_text_command with: {text_command}")
+        logger.info(f"Telegram Service: get_message_and_keyboards_by_text_command with: {text_command}")
         commands = {
             CommandsEnum.START: lambda: self.get_action_start(**kwargs),
             CommandsEnum.TOKEN: lambda: self.get_action_select_token(**kwargs),
@@ -23,13 +27,13 @@ class TelegramService:
         return reply_text, reply_keyboard
 
     def get_action_start(self, **kwargs):
-        print(f"Telegram Service: get_action_start")
+        logger.info(f"Telegram Service: get_action_start")
         reply_text = Message.WELCOME_TEXT
         reply_keyboard = self.append_to_reply_keyboard(MenuTelegram.REPLY_KEYBOARDS.value.get("default"), [])
         return reply_text, reply_keyboard
 
     def get_action_select_token(self, **kwargs):
-        print(f"Telegram Service: get_action_select_token")
+        logger.info(f"Telegram Service: get_action_select_token")
         file_name = f"{settings.BASE_DIR}/crypto/assets/token_exchange.json"
         tokens_address = get_data_file_json(file_name)
         reply_text = Message.SELECT_TOKEN
@@ -37,7 +41,7 @@ class TelegramService:
         return reply_text, reply_keyboard
 
     def get_action_select_crypto_exchange(self, **kwargs):
-        print(f"Telegram Service: get_action_select_crypto_exchange")
+        logger.info(f"Telegram Service: get_action_select_crypto_exchange")
         information_exchange_text = kwargs.get("text")
         reply_text = Message.SELECT_CRYPTO_EXCHANGE
         file_name = f"{settings.BASE_DIR}/crypto/assets/crypto_exchange_address.json"
@@ -57,7 +61,7 @@ class TelegramService:
         return reply_text, reply_keyboard
 
     def get_action_get_time_exchange(self, **kwargs):
-        print(f"Telegram Service: get_action_get_time_exchange")
+        logger.info(f"Telegram Service: get_action_get_time_exchange")
         symbol_token = kwargs.get("text")
         reply_text = Message.SELECT_TIME_EXCHANGE
         times = [dict(
@@ -70,7 +74,7 @@ class TelegramService:
         return reply_text, reply_keyboard
 
     def get_action_analysis_crypto_exchange(self, **kwargs):
-        print(f"Telegram Service: get_action_analysis_crypto_exchange")
+        logger.info(f"Telegram Service: get_action_analysis_crypto_exchange")
         text = kwargs.get("text")
         symbol_token, exchange_id, time_ago = text.split("_")[0], text.split("_")[1], text.split("_")[2]
         file_name = f"{settings.BASE_DIR}/crypto/assets/token_exchange.json"
