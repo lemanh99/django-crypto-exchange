@@ -31,3 +31,9 @@ class CoinGeckoMarketApi(CoinGeckoAPI):
 
     def get_contact_information(self, platform, contract_address):
         return self.get_coin_info_from_contract_address_by_id(platform, contract_address)
+
+    def get_exchange_information(self, exchange_id):
+        return self.get_exchanges_by_id(id=exchange_id)
+
+    def get_list_address_token(self):
+        return self.get_coins_list(include_platform=True)

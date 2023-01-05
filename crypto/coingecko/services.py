@@ -1,11 +1,11 @@
-import decimal
 import time
 from datetime import datetime
 from operator import itemgetter
 
-import babel.numbers
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 from crypto.core.common.constants import StableCoin
+from crypto.core.common.cryptocurrency_exchange.binance import BinanceCryptoSpot
 from crypto.core.common.cryptocurrency_exchange.coingecko import CoinGeckoMarketApi
 
 
@@ -171,3 +171,47 @@ class CoinGeckoService:
                 },
             })
         return sorted(information_coins, key=itemgetter('price_last'), reverse=True)
+
+    def get_address_token_by_exchange_id(self, req_data, exchange_id):
+        if exchange_id != 'binance':
+            return dict(error=f'API not support for exchange crypto {exchange_id}')
+
+        binance_spot = BinanceCryptoSpot()
+        market_binance_info = binance_spot.get_market_information()
+
+        trade_margin = req_data.get('trade_margin')
+        if trade_margin:
+            coins = sorted(list(set(
+                [symbol.get('baseAsset')
+                 for symbol in market_binance_info.get('symbols') if
+                 symbol.get("status") == "TRADING" and symbol.get("isMarginTradingAllowed") == bool(trade_margin)]
+            )))
+        else:
+            coins = sorted(list(set(
+                [symbol.get('baseAsset')
+                 for symbol in market_binance_info.get('symbols') if symbol.get("status") == "TRADING"]
+            )))
+
+        list_address_token = self.cg_market.get_list_address_token()
+        token_address_info = []
+        for coin in coins:
+            token = next((item for item in list_address_token if
+                          item['id'].lower() == coin.lower() or item['symbol'].lower() == coin.lower()), {})
+            if not token:
+                continue
+
+            if req_data.get('platform') and req_data.get('platform') not in token['platforms'].keys():
+                continue
+
+            token_address_info.append(dict(binance_symbol=coin, **token))
+
+        return token_address_info
+
+    def get_verify_chain_erc20(self, contract_address):
+        try:
+            address_info = self.cg_market.get_contact_information(platform='ethereum',
+                                                                  contract_address=contract_address)
+            return dict(status=HTTP_200_OK, address_info=address_info)
+
+        except ValueError as error:
+            return dict(status=HTTP_400_BAD_REQUEST, detail=str(error))
