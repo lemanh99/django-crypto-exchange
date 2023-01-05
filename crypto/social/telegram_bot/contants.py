@@ -8,6 +8,8 @@ class CommandsEnum(str, Enum):
     BACK_BUTTON_PRETEXT = "Back TO << "
     CANCEL = 'Cancel'
     TOKEN = "Token"
+    ADDRESS = "Address"
+    EXCHANGE = "Exchange"
     CRYPTO_EXCHANGE = "Crypto Exchange"
     ANALYSIS_CRYPTO_DATA = "analysis crypto data"
     TIME_EXCHANGE = "Time exchange"
@@ -17,9 +19,8 @@ class CommandsEnum(str, Enum):
 class MenuTelegram(Enum):
     REPLY_KEYBOARDS = {
         'default': [
-            [CommandsEnum.TOKEN],
-            [CommandsEnum.HELP, CommandsEnum.MORE_OPTIONS],
-            [CommandsEnum.CANCEL]
+            [CommandsEnum.TOKEN, CommandsEnum.EXCHANGE, CommandsEnum.ADDRESS],
+            [CommandsEnum.HELP, CommandsEnum.CANCEL, CommandsEnum.MORE_OPTIONS],
         ]
     }
 
@@ -33,6 +34,8 @@ class Message(str, Enum):
     WELCOME_TEXT = "Hi. Welcome to the bot Le Manh"
     HELP_TEXT = "How can i help you."
     SELECT_TOKEN = "please select token"
+    ENTER_ADDRESS = "please enter address contract ethereum"
+    EXCHANGE = "please select exchange crypto: "
     SELECT_CRYPTO_EXCHANGE = "please select crypto exchange"
     SELECT_TIME_EXCHANGE = "please select crypto exchange time"
     UNKNOWN_COMMAND = "OOps...We didn't recognise the command: {text}"
@@ -55,3 +58,7 @@ class TimeExchange(Enum):
     @property
     def name(self):
         return self.value[1]
+
+
+class CryptoExchange(str, Enum):
+    BINANCE = 'binance'

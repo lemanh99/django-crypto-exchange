@@ -2,7 +2,7 @@ from crypto.social.telegram_bot.echobot.echobot_v1 import run_telegram_bot_v1
 from crypto.social.telegram_bot.echobot.echobot_v2 import run_telegram_bot_v2
 
 
-def run_telegram_bot(version=1):
+def run_telegram_bot(version=2, *args, **kwargs):
     run_version = {
         1: lambda: run_telegram_bot_v1(),
         2: lambda: run_telegram_bot_v2(),

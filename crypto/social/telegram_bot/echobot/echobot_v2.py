@@ -4,8 +4,7 @@ from django.conf import settings
 from django.template import Context
 from django.template.loader import get_template
 from telegram import Update, ForceReply, ReplyKeyboardMarkup, InlineKeyboardMarkup, ReplyKeyboardRemove
-from telegram.ext import Updater, MessageHandler, Filters, CallbackContext, CallbackQueryHandler, ConversationHandler, \
-    CommandHandler
+from telegram.ext import Updater, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
 
 from crypto.social.telegram_bot.contants import Message, CommandsEnum, MenuTelegram
 from crypto.social.telegram_bot.services import TelegramService
@@ -47,16 +46,14 @@ def echo(update: Update, _: CallbackContext) -> None:
     logger.info("Run echo")
     """Echo the user message."""
     text = update.message.text
-    logger.info(f"Actions echo:{text}")
-    # Todo save profile username
-    # tele_user_obj = TelegramUser.subscribe(chat_id, user_name)
-    # user_recent_searches = tele_user_obj.get_recent_searches(1)
+    logger.info(f"Select text:{text}")
     reply_text = ""
     reply_keyboard = MenuTelegram.REPLY_KEYBOARDS.value.get("default")
     reply_markup = ReplyKeyboardMarkup(reply_keyboard, )
     text = text.replace(CommandsEnum.BACK_BUTTON_PRETEXT, "")
     telegram_service = TelegramService()
 
+    ############################ Layer 1 ###########################################
     if text in [CommandsEnum.START, '/start']:
         user = update.message.from_user
         logger.info("User %s started the conversation.", user.first_name)
@@ -64,16 +61,31 @@ def echo(update: Update, _: CallbackContext) -> None:
             text_command=CommandsEnum.START
         )
         reply_markup = ReplyKeyboardMarkup(reply_keyboard, )
+
     elif text == CommandsEnum.HELP:
         reply_text = Message.HELP_TEXT
+
+    elif text == CommandsEnum.CANCEL:
+        remove_chat_buttons(update.message.bot, update.message.chat_id, text=Message.GOODBYE)
+
     elif text in [CommandsEnum.TOKEN, '/token']:
         remove_chat_buttons(bot=update.message.bot, chat_id=update.message.chat_id, text="Hi !!")
         reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.TOKEN
         )
         reply_markup = InlineKeyboardMarkup(reply_keyboard)
-    elif text == CommandsEnum.CANCEL:
-        remove_chat_buttons(update.message.bot, update.message.chat_id, text=Message.GOODBYE)
+
+    elif text in [CommandsEnum.EXCHANGE, '/exchange']:
+        remove_chat_buttons(bot=update.message.bot, chat_id=update.message.chat_id, text="Hi !!")
+        reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+            text_command=CommandsEnum.EXCHANGE
+        )
+        reply_markup = InlineKeyboardMarkup(reply_keyboard)
+
+    elif text in [CommandsEnum.ADDRESS, '/address']:
+        remove_chat_buttons(bot=update.message.bot, chat_id=update.message.chat_id, text=Message.ENTER_ADDRESS)
+        reply_markup = ForceReply(selective=True)
+
     else:
         reply_text = Message.UNKNOWN_COMMAND.format(text=text)
 
@@ -87,7 +99,7 @@ def callback_echo(update, context):
     query = update.callback_query
     query_data = query.data
     logger.info(f"callback_echo {query_data}")
-    logger.debug(f"Debug: Data callback {query}")
+    logger.info(f"Debug: Data callback {query}")
     chat_id = query.message.chat.id
     telegram_service = TelegramService()
     if telegram_service.is_token_address_available(text=query_data):

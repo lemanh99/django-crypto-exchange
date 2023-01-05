@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.conf import settings
@@ -6,7 +7,8 @@ from telegram import InlineKeyboardButton
 from crypto.core.utils.dict import get_dict_in_list, get_unique_list_of_dict
 from crypto.core.utils.json import get_data_file_json
 from crypto.core.utils.string import convert_string_to_money
-from crypto.social.telegram_bot.contants import CommandsEnum, Position, Message, MenuTelegram, TimeExchange
+from crypto.social.telegram_bot.contants import CommandsEnum, Position, Message, MenuTelegram, TimeExchange, \
+    CryptoExchange
 from crypto.tracking.blockchair.services import BlockchairService
 
 logger = logging.getLogger(__name__)
@@ -17,14 +19,22 @@ class TelegramService:
     def get_message_and_keyboards_by_text_command(self, text_command, **kwargs):
         logger.info(f"Telegram Service: get_message_and_keyboards_by_text_command with: {text_command}")
         commands = {
+            # Layer 1
             CommandsEnum.START: lambda: self.get_action_start(**kwargs),
             CommandsEnum.TOKEN: lambda: self.get_action_select_token(**kwargs),
-            CommandsEnum.CRYPTO_EXCHANGE: lambda: self.get_action_select_crypto_exchange(**kwargs),
-            CommandsEnum.TIME_EXCHANGE: lambda: self.get_action_get_time_exchange(**kwargs),
-            CommandsEnum.ANALYSIS_CRYPTO_DATA: lambda: self.get_action_analysis_crypto_exchange(**kwargs)
+            CommandsEnum.EXCHANGE: lambda: self.get_action_select_exchange(),
+            # CommandsEnum.CRYPTO_EXCHANGE: lambda: self.get_action_select_crypto_exchange(**kwargs),
+            # CommandsEnum.TIME_EXCHANGE: lambda: self.get_action_get_time_exchange(**kwargs),
+            # CommandsEnum.ANALYSIS_CRYPTO_DATA: lambda: self.get_action_analysis_crypto_exchange(**kwargs)
         }
         reply_text, reply_keyboard = commands.get(text_command)()
         return reply_text, reply_keyboard
+
+    """
+    ---------------------------------------------
+          Layer 1
+    --------------------------------------------
+    """
 
     def get_action_start(self, **kwargs):
         logger.info(f"Telegram Service: get_action_start")
@@ -40,6 +50,14 @@ class TelegramService:
         reply_keyboard = self.create_reply_inline_keyboard(tokens_address, key_name="name", key_callback="symbol")
         return reply_text, reply_keyboard
 
+    def get_action_select_exchange(self, **kwargs):
+        logger.info(f"Telegram Service: get_action_select_exchange")
+        reply_text = Message.EXCHANGE
+        crypto_exchange = [dict(name=exchange, value=exchange) for exchange in CryptoExchange]
+        reply_keyboard = self.create_reply_inline_keyboard(crypto_exchange, key_name="name", key_callback="value")
+        return reply_text, reply_keyboard
+    ## ----------------------------------------------------------------
+
     def get_action_select_crypto_exchange(self, **kwargs):
         logger.info(f"Telegram Service: get_action_select_crypto_exchange")
         information_exchange_text = kwargs.get("text")
@@ -48,7 +66,7 @@ class TelegramService:
         crypto_exchanges = get_data_file_json(file_name)
         exchange_data = [dict(
             exchange=crypto_exchange.get("exchange"),
-            exchange_id=f"{information_exchange_text}_{crypto_exchange.get('exchange_id')}"
+            exchange_id=json.dumps(dict(layer_1=information_exchange_text, layer_2=crypto_exchange.get('exchange_id')))
         ) for crypto_exchange in crypto_exchanges]
         exchange_data = get_unique_list_of_dict(exchange_data)
         exchange_data.append(dict(
