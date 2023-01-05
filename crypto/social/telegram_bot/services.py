@@ -2,13 +2,14 @@ import json
 import logging
 
 from django.conf import settings
+from djoser.utils import encode_uid
 from telegram import InlineKeyboardButton
 
 from crypto.core.utils.dict import get_dict_in_list, get_unique_list_of_dict
-from crypto.core.utils.json import get_data_file_json
+from crypto.core.utils.json import get_data_file_json, convert_json_to_string
 from crypto.core.utils.string import convert_string_to_money
 from crypto.social.telegram_bot.contants import CommandsEnum, Position, Message, MenuTelegram, TimeExchange, \
-    CryptoExchange
+    CryptoExchange, TypeCryptoExchange, StepBot
 from crypto.tracking.blockchair.services import BlockchairService
 
 logger = logging.getLogger(__name__)
@@ -19,10 +20,11 @@ class TelegramService:
     def get_message_and_keyboards_by_text_command(self, text_command, **kwargs):
         logger.info(f"Telegram Service: get_message_and_keyboards_by_text_command with: {text_command}")
         commands = {
-            # Layer 1
+            # Step 1
             CommandsEnum.START: lambda: self.get_action_start(**kwargs),
             CommandsEnum.TOKEN: lambda: self.get_action_select_token(**kwargs),
             CommandsEnum.EXCHANGE: lambda: self.get_action_select_exchange(),
+            CommandsEnum.TYPE_TOKEN_CRYPTO: lambda: self.get_action_type_crypto_in_crypto_exchange(**kwargs),
             # CommandsEnum.CRYPTO_EXCHANGE: lambda: self.get_action_select_crypto_exchange(**kwargs),
             # CommandsEnum.TIME_EXCHANGE: lambda: self.get_action_get_time_exchange(**kwargs),
             # CommandsEnum.ANALYSIS_CRYPTO_DATA: lambda: self.get_action_analysis_crypto_exchange(**kwargs)
@@ -32,7 +34,7 @@ class TelegramService:
 
     """
     ---------------------------------------------
-          Layer 1
+          Step 1
     --------------------------------------------
     """
 
@@ -56,7 +58,40 @@ class TelegramService:
         crypto_exchange = [dict(name=exchange, value=exchange) for exchange in CryptoExchange]
         reply_keyboard = self.create_reply_inline_keyboard(crypto_exchange, key_name="name", key_callback="value")
         return reply_text, reply_keyboard
-    ## ----------------------------------------------------------------
+
+    """
+    ---------------------------------------------
+          Step 2
+    --------------------------------------------
+    """
+
+    def get_action_type_crypto_in_crypto_exchange(self, **kwargs):
+        logger.info(f"Telegram Service: get_action_select_token_available")
+        text = kwargs.get('text')
+        key_callback = {
+            "step_current": StepBot.TWO.value,
+            "step_1": text,
+            "step_2": ""
+        }
+        type_exchange = []
+        for type_crypto in TypeCryptoExchange:
+            key_callback.update(step_2=type_crypto.variable)
+            s = convert_json_to_string(key_callback)
+            text = encode_uid(s)
+            type_exchange.append(dict(
+                name=type_crypto.name, value=text
+            ))
+
+        reply_text = Message.SELECT_OPTION
+        reply_keyboard = self.create_reply_inline_keyboard(type_exchange, key_name="name", key_callback="value")
+        return reply_text, reply_keyboard
+
+    def get_action_select_token_available_in_crypto_exchange(self, **kwargs):
+        logger.info(f"Telegram Service: get_action_select_token_available")
+        information_exchange_text = kwargs.get("text")
+        reply_text = Message.SELECT_CRYPTO_EXCHANGE
+        reply_keyboard = []
+        return reply_text, reply_keyboard
 
     def get_action_select_crypto_exchange(self, **kwargs):
         logger.info(f"Telegram Service: get_action_select_crypto_exchange")
@@ -139,6 +174,17 @@ class TelegramService:
                 datetime_from=data.get("datetime_from"),
             ))
         return response_data
+
+    """
+    ---------------------------------------------
+          Check condition step
+    --------------------------------------------
+    """
+
+    @staticmethod
+    def is_crypto_exchange_available(**kwargs):
+        text = kwargs.get("text")
+        return text in [exchange for exchange in CryptoExchange]
 
     @staticmethod
     def is_token_address_available(**kwargs):

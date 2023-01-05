@@ -10,6 +10,7 @@ class CommandsEnum(str, Enum):
     TOKEN = "Token"
     ADDRESS = "Address"
     EXCHANGE = "Exchange"
+    TYPE_TOKEN_CRYPTO = "Type Token Exchange"
     CRYPTO_EXCHANGE = "Crypto Exchange"
     ANALYSIS_CRYPTO_DATA = "analysis crypto data"
     TIME_EXCHANGE = "Time exchange"
@@ -33,6 +34,7 @@ class Position(str, Enum):
 class Message(str, Enum):
     WELCOME_TEXT = "Hi. Welcome to the bot Le Manh"
     HELP_TEXT = "How can i help you."
+    SELECT_OPTION = "Please select option: "
     SELECT_TOKEN = "please select token"
     ENTER_ADDRESS = "please enter address contract ethereum"
     EXCHANGE = "please select exchange crypto: "
@@ -62,3 +64,25 @@ class TimeExchange(Enum):
 
 class CryptoExchange(str, Enum):
     BINANCE = 'binance'
+
+
+class BaseCryptoEnum(Enum):
+    @property
+    def name(self):
+        return self.value[0]
+
+    @property
+    def variable(self):
+        return self.value[1]
+
+
+class TypeCryptoExchange(BaseCryptoEnum):
+    SPOT = 'Token spot', 'spot'
+    FUTURES = 'Token futures', 'futures'
+    INPUT_ADDRESS = 'Input address', 'input_address'
+
+
+class StepBot(int, Enum):
+    ONE = 1
+    TWO = 2
+    THREE = 3

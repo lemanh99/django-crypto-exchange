@@ -6,6 +6,7 @@ from django.template.loader import get_template
 from telegram import Update, ForceReply, ReplyKeyboardMarkup, InlineKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
 
+from crypto.core.utils.json import convert_string_to_json
 from crypto.social.telegram_bot.contants import Message, CommandsEnum, MenuTelegram
 from crypto.social.telegram_bot.services import TelegramService
 
@@ -53,7 +54,11 @@ def echo(update: Update, _: CallbackContext) -> None:
     text = text.replace(CommandsEnum.BACK_BUTTON_PRETEXT, "")
     telegram_service = TelegramService()
 
-    ############################ Layer 1 ###########################################
+    """
+    ---------------------------------------------
+          Step 1
+    --------------------------------------------
+    """
     if text in [CommandsEnum.START, '/start']:
         user = update.message.from_user
         logger.info("User %s started the conversation.", user.first_name)
@@ -102,13 +107,29 @@ def callback_echo(update, context):
     logger.info(f"Debug: Data callback {query}")
     chat_id = query.message.chat.id
     telegram_service = TelegramService()
+    """
+    ---------------------------------------------
+          Step 2 callback
+    --------------------------------------------
+    """
+    input_data = convert_string_to_json(query_data)
+    if isinstance(input_data, str):
+        if telegram_service.is_crypto_exchange_available(text=query_data):
+            reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+                text_command=CommandsEnum.TYPE_TOKEN_CRYPTO, text=query_data
+            )
+            reply_markup = InlineKeyboardMarkup(reply_keyboard)
+            query.edit_message_text(text=f"You have selected {query_data}, {reply_text}", reply_markup=reply_markup)
+
+    elif isinstance(input_data, dict):
+        pass
+
     if telegram_service.is_token_address_available(text=query_data):
         reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.CRYPTO_EXCHANGE, text=query_data
         )
         reply_markup = InlineKeyboardMarkup(reply_keyboard)
         query.edit_message_text(text=f"You have selected {query_data}, {reply_text}", reply_markup=reply_markup)
-        return "first"
     elif "_" in query_data and query_data.count('_') == 1:
         reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.TIME_EXCHANGE, text=query_data
