@@ -41,6 +41,7 @@ class Message(str, Enum):
     SELECT_CRYPTO_EXCHANGE = "please select crypto exchange"
     SELECT_TIME_EXCHANGE = "please select crypto exchange time"
     UNKNOWN_COMMAND = "OOps...We didn't recognise the command: {text}"
+    UNKNOWN_ERROR = "Sorry...An unknown error has occurred"
     GOODBYE = "Goodbye!!"
 
 

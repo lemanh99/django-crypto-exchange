@@ -11,26 +11,33 @@ from crypto.core.utils.string import convert_string_to_money
 from crypto.social.telegram_bot.contants import CommandsEnum, Position, Message, MenuTelegram, TimeExchange, \
     CryptoExchange, TypeCryptoExchange, StepBot
 from crypto.tracking.blockchair.services import BlockchairService
+from crypto.user.services import UserService
 
 logger = logging.getLogger(__name__)
 
 
 class TelegramService:
+    def __init__(self):
+        self.user_service = UserService()
 
     def get_message_and_keyboards_by_text_command(self, text_command, **kwargs):
-        logger.info(f"Telegram Service: get_message_and_keyboards_by_text_command with: {text_command}")
-        commands = {
-            # Step 1
-            CommandsEnum.START: lambda: self.get_action_start(**kwargs),
-            CommandsEnum.TOKEN: lambda: self.get_action_select_token(**kwargs),
-            CommandsEnum.EXCHANGE: lambda: self.get_action_select_exchange(),
-            CommandsEnum.TYPE_TOKEN_CRYPTO: lambda: self.get_action_type_crypto_in_crypto_exchange(**kwargs),
-            # CommandsEnum.CRYPTO_EXCHANGE: lambda: self.get_action_select_crypto_exchange(**kwargs),
-            # CommandsEnum.TIME_EXCHANGE: lambda: self.get_action_get_time_exchange(**kwargs),
-            # CommandsEnum.ANALYSIS_CRYPTO_DATA: lambda: self.get_action_analysis_crypto_exchange(**kwargs)
-        }
-        reply_text, reply_keyboard = commands.get(text_command)()
-        return reply_text, reply_keyboard
+        try:
+            logger.info(f"Telegram Service: get_message_and_keyboards_by_text_command with: {text_command}")
+            commands = {
+                # Step 1
+                CommandsEnum.START: lambda: self.get_action_start(**kwargs),
+                CommandsEnum.TOKEN: lambda: self.get_action_select_token(**kwargs),
+                CommandsEnum.EXCHANGE: lambda: self.get_action_select_exchange(),
+                CommandsEnum.TYPE_TOKEN_CRYPTO: lambda: self.get_action_type_crypto_in_crypto_exchange(**kwargs),
+                # CommandsEnum.CRYPTO_EXCHANGE: lambda: self.get_action_select_crypto_exchange(**kwargs),
+                # CommandsEnum.TIME_EXCHANGE: lambda: self.get_action_get_time_exchange(**kwargs),
+                # CommandsEnum.ANALYSIS_CRYPTO_DATA: lambda: self.get_action_analysis_crypto_exchange(**kwargs)
+            }
+            reply_text, reply_keyboard = commands.get(text_command)()
+            return reply_text, reply_keyboard
+        except Exception as error:
+            logger.info(f"Telegram Service: error system with: {str(error)}")
+            return Message.UNKNOWN_ERROR, []
 
     """
     ---------------------------------------------
@@ -40,6 +47,7 @@ class TelegramService:
 
     def get_action_start(self, **kwargs):
         logger.info(f"Telegram Service: get_action_start")
+        self.user_service.clear_data_user_telegram_tracker()
         reply_text = Message.WELCOME_TEXT
         reply_keyboard = self.append_to_reply_keyboard(MenuTelegram.REPLY_KEYBOARDS.value.get("default"), [])
         return reply_text, reply_keyboard
@@ -70,16 +78,20 @@ class TelegramService:
         text = kwargs.get('text')
         key_callback = {
             "step_current": StepBot.TWO.value,
+            "uuid": ""
+        }
+        step_detail = {
             "step_1": text,
             "step_2": ""
         }
         type_exchange = []
         for type_crypto in TypeCryptoExchange:
-            key_callback.update(step_2=type_crypto.variable)
-            s = convert_json_to_string(key_callback)
-            text = encode_uid(s)
+            step_detail.update(step_2=type_crypto.variable)
+            text = convert_json_to_string(step_detail)
+            uuid = self.create_data_tracking(user_id=kwargs.get('text'), username=kwargs.get('username'), text=text)
+            key_callback.update(uuid=uuid)
             type_exchange.append(dict(
-                name=type_crypto.name, value=text
+                name=type_crypto.name, value=convert_json_to_string(key_callback)
             ))
 
         reply_text = Message.SELECT_OPTION
@@ -174,6 +186,18 @@ class TelegramService:
                 datetime_from=data.get("datetime_from"),
             ))
         return response_data
+
+    def create_data_tracking(self, user_id, username, text):
+        req_data = {
+            "user_id": user_id,
+            "username": username,
+            "token_tracker": text
+        }
+        user_tracking = self.user_service.create_action_tracking_telegram(req_data)
+        if "error" in user_tracking.keys():
+            raise ValueError("Not create data tracker")
+
+        return user_tracking.get('uuid')
 
     """
     ---------------------------------------------
