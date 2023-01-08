@@ -16,9 +16,9 @@ from crypto.user.services import UserService
 )
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def get_user_telegram_tracker_by_uuid(request, uuid):
+def get_user_telegram_tracker_by_user_id(request, user_id):
     user_service = UserService()
-    data = user_service.get_user_telegram_tracker_by_uuid(uuid)
+    data = user_service.get_user_telegram_tracker_by_user_id(user_id)
     return make_response(data=data, app_status=200)
 
 
@@ -37,15 +37,29 @@ def create_action_tracking_telegram(request):
 
 
 @extend_schema(
+    methods=['PUT'],
+    tags=['user'],
+    request=UserTelegramTrackerSerializer,
+    responses={HTTP_200_OK: {}},
+)
+@api_view(['PUT'])
+@permission_classes([AllowAny])
+def update_user_telegram_tracker_by_user_id(request, user_id):
+    user_service = UserService()
+    data = user_service.update_user_telegram_tracker_by_user_id(user_id, request.data)
+    return make_response(data=data, app_status=200)
+
+
+@extend_schema(
     methods=['DELETE'],
     tags=['user'],
     responses={HTTP_200_OK: {}},
 )
 @api_view(['DELETE'])
 @permission_classes([AllowAny])
-def delete_user_telegram_tracker_by_uuid(request, uuid):
+def delete_user_telegram_tracker_by_user_id(request, user_id):
     user_service = UserService()
-    data = user_service.delete_user_telegram_tracker_by_uuid(uuid)
+    data = user_service.delete_user_telegram_tracker_by_user_id(user_id)
     return make_response(data=data, app_status=200)
 
 

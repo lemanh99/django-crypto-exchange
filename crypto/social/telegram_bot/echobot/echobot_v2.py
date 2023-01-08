@@ -6,7 +6,6 @@ from django.template.loader import get_template
 from telegram import Update, ForceReply, ReplyKeyboardMarkup, InlineKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
 
-from crypto.core.utils.json import convert_string_to_json
 from crypto.social.telegram_bot.contants import Message, CommandsEnum, MenuTelegram
 from crypto.social.telegram_bot.services import TelegramService
 
@@ -52,8 +51,9 @@ def echo(update: Update, _: CallbackContext) -> None:
     reply_keyboard = MenuTelegram.REPLY_KEYBOARDS.value.get("default")
     reply_markup = ReplyKeyboardMarkup(reply_keyboard, )
     text = text.replace(CommandsEnum.BACK_BUTTON_PRETEXT, "")
-    telegram_service = TelegramService()
-
+    telegram_service = TelegramService(update=update)
+    user = telegram_service.get_action_user_from_database()
+    commands_before = user.get('commands')
     """
     ---------------------------------------------
           Step 1
@@ -91,6 +91,12 @@ def echo(update: Update, _: CallbackContext) -> None:
         remove_chat_buttons(bot=update.message.bot, chat_id=update.message.chat_id, text=Message.ENTER_ADDRESS)
         reply_markup = ForceReply(selective=True)
 
+    elif commands_before == CommandsEnum.SYMBOL_BINANCE:
+        reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+            text_command=CommandsEnum.CRYPTO_EXCHANGE, text=text
+        )
+        reply_markup = InlineKeyboardMarkup(reply_keyboard)
+
     else:
         reply_text = Message.UNKNOWN_COMMAND.format(text=text)
 
@@ -105,51 +111,61 @@ def callback_echo(update, context):
     query_data = query.data
     logger.info(f"callback_echo {query_data}")
     logger.info(f"Debug: Data callback {query}")
-    chat_id = query.message.chat.id
-    telegram_service = TelegramService()
+    telegram_service = TelegramService(update=update.callback_query)
+
     """
     ---------------------------------------------
           Step 2 callback
     --------------------------------------------
     """
-    input_data = convert_string_to_json(query_data)
-    if isinstance(input_data, str):
-        if telegram_service.is_crypto_exchange_available(text=query_data):
+    try:
+        user = telegram_service.get_action_user_from_database()
+        commands_before = user.get('commands')
+        if commands_before == CommandsEnum.EXCHANGE:
+            if telegram_service.is_crypto_exchange_available(text=query_data):
+                reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+                    text_command=CommandsEnum.TYPE_TOKEN_CRYPTO, text=query_data
+                )
+                reply_markup = InlineKeyboardMarkup(reply_keyboard)
+                query.edit_message_text(text=f"You have selected {query_data}, {reply_text}", reply_markup=reply_markup)
+            else:
+                query.edit_message_text(text=f"Please select again", reply_markup=None)
+
+        elif commands_before == CommandsEnum.TYPE_TOKEN_CRYPTO:
             reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
-                text_command=CommandsEnum.TYPE_TOKEN_CRYPTO, text=query_data
+                text_command=CommandsEnum.SYMBOL_BINANCE, text=query_data
+            )
+            reply_markup = InlineKeyboardMarkup(reply_keyboard)
+            query.edit_message_text(text=f"You have selected {query_data}, {reply_text}", reply_markup=reply_markup)
+        elif commands_before == CommandsEnum.SYMBOL_BINANCE:
+            reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+                text_command=CommandsEnum.CRYPTO_EXCHANGE, text=query_data
             )
             reply_markup = InlineKeyboardMarkup(reply_keyboard)
             query.edit_message_text(text=f"You have selected {query_data}, {reply_text}", reply_markup=reply_markup)
 
-    elif isinstance(input_data, dict):
-        pass
-
-    if telegram_service.is_token_address_available(text=query_data):
-        reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
-            text_command=CommandsEnum.CRYPTO_EXCHANGE, text=query_data
-        )
-        reply_markup = InlineKeyboardMarkup(reply_keyboard)
-        query.edit_message_text(text=f"You have selected {query_data}, {reply_text}", reply_markup=reply_markup)
-    elif "_" in query_data and query_data.count('_') == 1:
-        reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
-            text_command=CommandsEnum.TIME_EXCHANGE, text=query_data
-        )
-        reply_markup = InlineKeyboardMarkup(reply_keyboard)
-        query.edit_message_text(text=f"You have selected {query_data.replace('_', '-')}, {reply_text}",
-                                reply_markup=reply_markup)
-        return "two"
-    elif "_" in query_data and query_data.count('_') == 2:
-        query.edit_message_text(text=f"You select exchange {query_data.replace('_', '-')}", parse_mode='HTML')
-        data_analysis, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
-            text_command=CommandsEnum.ANALYSIS_CRYPTO_DATA, text=query_data
-        )
-        template = get_template("telegram/information_analysis_data.html")
-        for data in data_analysis:
-            render_context = Context(dict(**data))
-            html = template.template.render(render_context)
-            context.bot.send_message(chat_id=chat_id, text=str(html), parse_mode='HTML')
-    else:
-        query.answer(text=f"Please select again !")
+        elif commands_before == CommandsEnum.CRYPTO_EXCHANGE:
+            reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+                text_command=CommandsEnum.TIME_EXCHANGE, text=query_data
+            )
+            reply_markup = InlineKeyboardMarkup(reply_keyboard)
+            query.edit_message_text(text=f"You have selected {query_data}, {reply_text}",
+                                    reply_markup=reply_markup)
+        elif commands_before == CommandsEnum.TIME_EXCHANGE:
+            query.edit_message_text(text=f"You select exchange {query_data}", parse_mode='HTML')
+            data_analysis, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+                text_command=CommandsEnum.ANALYSIS_CRYPTO_DATA, text=query_data
+            )
+            template = get_template("telegram/information_analysis_data.html")
+            for data in data_analysis:
+                render_context = Context(dict(**data))
+                html = template.template.render(render_context)
+                context.bot.send_message(chat_id=query.message.chat.id, text=str(html), parse_mode='HTML')
+        else:
+            query.answer(text=f"Please select again !")
+    except Exception as e:
+        logger.info("Callback error: %s", str(e))
+        query.edit_message_text(text=f"Please select again", reply_markup=None)
 
 
 def run_telegram_bot_v2() -> None:
@@ -163,8 +179,6 @@ def run_telegram_bot_v2() -> None:
         dispatcher = updater.dispatcher
 
         # on different commands - answer in Telegram
-        # dispatcher.add_handler(CommandHandler("start", start))
-        # dispatcher.add_handler(CommandHandler("help", help_command))
 
         # on non command i.e message - echo the message on Telegram
         dispatcher.add_handler(MessageHandler(Filters.text, echo))

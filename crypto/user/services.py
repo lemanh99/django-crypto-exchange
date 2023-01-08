@@ -9,9 +9,9 @@ from crypto.user.serializers import UserTelegramTrackerSerializer
 
 class UserService:
     @classmethod
-    def get_user_telegram_tracker_by_uuid(cls, uuid):
+    def get_user_telegram_tracker_by_user_id(cls, user_id):
         try:
-            user_telegram = UserTelegramTracker.objects.get(uuid=uuid)
+            user_telegram = UserTelegramTracker.objects.get(user_id=user_id)
             return UserTelegramTrackerSerializer(user_telegram).data
         except UserTelegramTracker.DoesNotExist:
             return None
@@ -24,7 +24,6 @@ class UserService:
     def create_action_tracking_telegram(cls, req_data):
         try:
             with transaction.atomic():
-                req_data['uuid'] = str(uuid.uuid4().hex)
                 user_tracker_serializer = UserTelegramTrackerSerializer(data=req_data)
                 user_tracker_serializer.is_valid(raise_exception=True)
                 user_tracker_serializer.save()
@@ -36,9 +35,23 @@ class UserService:
             return dict(error=str(e))
 
     @classmethod
-    def delete_user_telegram_tracker_by_uuid(cls, uuid):
+    def delete_user_telegram_tracker_by_user_id(cls, user_id):
         try:
-            UserTelegramTracker.objects.filter(uuid=uuid).delete()
+            UserTelegramTracker.objects.filter(user_id=user_id).delete()
+        except DatabaseError:
+            return dict(error="Database error")
+        except Exception as e:
+            return dict(error=str(e))
+
+    @classmethod
+    def update_user_telegram_tracker_by_user_id(cls, user_id, req_data):
+        try:
+            user_telegram = UserTelegramTracker.objects.get(user_id=user_id)
+            user_tracker_serializer = UserTelegramTrackerSerializer(instance=user_telegram, data=req_data)
+            user_tracker_serializer.is_valid(raise_exception=True)
+            user_tracker_serializer.save()
+        except UserTelegramTracker.DoesNotExist:
+            return dict(error="User not found")
         except DatabaseError:
             return dict(error="Database error")
         except Exception as e:

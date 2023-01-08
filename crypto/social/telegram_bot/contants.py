@@ -11,6 +11,7 @@ class CommandsEnum(str, Enum):
     ADDRESS = "Address"
     EXCHANGE = "Exchange"
     TYPE_TOKEN_CRYPTO = "Type Token Exchange"
+    SYMBOL_BINANCE = "symbol_binance"
     CRYPTO_EXCHANGE = "Crypto Exchange"
     ANALYSIS_CRYPTO_DATA = "analysis crypto data"
     TIME_EXCHANGE = "Time exchange"
@@ -80,10 +81,11 @@ class BaseCryptoEnum(Enum):
 class TypeCryptoExchange(BaseCryptoEnum):
     SPOT = 'Token spot', 'spot'
     FUTURES = 'Token futures', 'futures'
-    INPUT_ADDRESS = 'Input address', 'input_address'
+    INPUT_SYMBOL = 'Input symbol', 'InputSymbol'
 
 
 class StepBot(int, Enum):
     ONE = 1
     TWO = 2
     THREE = 3
+    FOUR = 4

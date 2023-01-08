@@ -2,14 +2,14 @@ import json
 import logging
 
 from django.conf import settings
-from djoser.utils import encode_uid
-from telegram import InlineKeyboardButton
+from telegram import Update
 
 from crypto.core.utils.dict import get_dict_in_list, get_unique_list_of_dict
-from crypto.core.utils.json import get_data_file_json, convert_json_to_string
+from crypto.core.utils.json import get_data_file_json
 from crypto.core.utils.string import convert_string_to_money
-from crypto.social.telegram_bot.contants import CommandsEnum, Position, Message, MenuTelegram, TimeExchange, \
+from crypto.social.telegram_bot.contants import CommandsEnum, Message, MenuTelegram, TimeExchange, \
     CryptoExchange, TypeCryptoExchange, StepBot
+from crypto.social.telegram_bot.repository import TelegramRepository
 from crypto.tracking.blockchair.services import BlockchairService
 from crypto.user.services import UserService
 
@@ -17,8 +17,11 @@ logger = logging.getLogger(__name__)
 
 
 class TelegramService:
-    def __init__(self):
+    def __init__(self, update: Update):
         self.user_service = UserService()
+        self.telegram_update = update
+        self.telegram_repository = TelegramRepository()
+        self.user = None
 
     def get_message_and_keyboards_by_text_command(self, text_command, **kwargs):
         try:
@@ -28,10 +31,15 @@ class TelegramService:
                 CommandsEnum.START: lambda: self.get_action_start(**kwargs),
                 CommandsEnum.TOKEN: lambda: self.get_action_select_token(**kwargs),
                 CommandsEnum.EXCHANGE: lambda: self.get_action_select_exchange(),
+                # Step 2
                 CommandsEnum.TYPE_TOKEN_CRYPTO: lambda: self.get_action_type_crypto_in_crypto_exchange(**kwargs),
-                # CommandsEnum.CRYPTO_EXCHANGE: lambda: self.get_action_select_crypto_exchange(**kwargs),
-                # CommandsEnum.TIME_EXCHANGE: lambda: self.get_action_get_time_exchange(**kwargs),
-                # CommandsEnum.ANALYSIS_CRYPTO_DATA: lambda: self.get_action_analysis_crypto_exchange(**kwargs)
+                # Step 3
+                CommandsEnum.SYMBOL_BINANCE: lambda: self.get_action_select_symbol_binance(**kwargs),
+                CommandsEnum.CRYPTO_EXCHANGE: lambda: self.get_action_select_crypto_exchange(**kwargs),
+                # Step 4
+                CommandsEnum.TIME_EXCHANGE: lambda: self.get_action_get_time_exchange(**kwargs),
+                # Step 5 final
+                CommandsEnum.ANALYSIS_CRYPTO_DATA: lambda: self.get_action_analysis_crypto_exchange(**kwargs)
             }
             reply_text, reply_keyboard = commands.get(text_command)()
             return reply_text, reply_keyboard
@@ -49,7 +57,9 @@ class TelegramService:
         logger.info(f"Telegram Service: get_action_start")
         self.user_service.clear_data_user_telegram_tracker()
         reply_text = Message.WELCOME_TEXT
-        reply_keyboard = self.append_to_reply_keyboard(MenuTelegram.REPLY_KEYBOARDS.value.get("default"), [])
+        reply_keyboard = self.telegram_repository.append_to_reply_keyboard(
+            MenuTelegram.REPLY_KEYBOARDS.value.get("default"), []
+        )
         return reply_text, reply_keyboard
 
     def get_action_select_token(self, **kwargs):
@@ -57,14 +67,28 @@ class TelegramService:
         file_name = f"{settings.BASE_DIR}/crypto/assets/token_exchange.json"
         tokens_address = get_data_file_json(file_name)
         reply_text = Message.SELECT_TOKEN
-        reply_keyboard = self.create_reply_inline_keyboard(tokens_address, key_name="name", key_callback="symbol")
+        reply_keyboard = self.telegram_repository.create_reply_inline_keyboard(tokens_address,
+                                                                               key_name="name",
+                                                                               key_callback="symbol")
+        self.save_action_user_to_database(
+            step_current=StepBot.ONE.value,
+            commands=CommandsEnum.TOKEN.value,
+            text_input=CommandsEnum.TOKEN.value
+        )
         return reply_text, reply_keyboard
 
     def get_action_select_exchange(self, **kwargs):
         logger.info(f"Telegram Service: get_action_select_exchange")
         reply_text = Message.EXCHANGE
         crypto_exchange = [dict(name=exchange, value=exchange) for exchange in CryptoExchange]
-        reply_keyboard = self.create_reply_inline_keyboard(crypto_exchange, key_name="name", key_callback="value")
+        reply_keyboard = self.telegram_repository.create_reply_inline_keyboard(crypto_exchange,
+                                                                               key_name="name",
+                                                                               key_callback="value")
+        self.save_action_user_to_database(
+            step_current=StepBot.ONE.value,
+            commands=CommandsEnum.EXCHANGE.value,
+            text_input=CommandsEnum.EXCHANGE.value
+        )
         return reply_text, reply_keyboard
 
     """
@@ -76,33 +100,45 @@ class TelegramService:
     def get_action_type_crypto_in_crypto_exchange(self, **kwargs):
         logger.info(f"Telegram Service: get_action_select_token_available")
         text = kwargs.get('text')
-        key_callback = {
-            "step_current": StepBot.TWO.value,
-            "uuid": ""
-        }
-        step_detail = {
-            "step_1": text,
-            "step_2": ""
-        }
-        type_exchange = []
-        for type_crypto in TypeCryptoExchange:
-            step_detail.update(step_2=type_crypto.variable)
-            text = convert_json_to_string(step_detail)
-            uuid = self.create_data_tracking(user_id=kwargs.get('text'), username=kwargs.get('username'), text=text)
-            key_callback.update(uuid=uuid)
-            type_exchange.append(dict(
-                name=type_crypto.name, value=convert_json_to_string(key_callback)
-            ))
-
         reply_text = Message.SELECT_OPTION
-        reply_keyboard = self.create_reply_inline_keyboard(type_exchange, key_name="name", key_callback="value")
+        # Todo: validate data
+        type_exchange = [
+            dict(
+                name=type_crypto.name, value=type_crypto.variable
+            ) for type_crypto in TypeCryptoExchange
+        ]
+        reply_keyboard = self.telegram_repository.create_reply_inline_keyboard(type_exchange,
+                                                                               key_name="name",
+                                                                               key_callback="value")
+        self.save_action_user_to_database(
+            step_current=StepBot.TWO.value,
+            commands=CommandsEnum.TYPE_TOKEN_CRYPTO.value,
+            text_input=f'{self.user.get("text_input")}_{text}'
+        )
         return reply_text, reply_keyboard
 
-    def get_action_select_token_available_in_crypto_exchange(self, **kwargs):
-        logger.info(f"Telegram Service: get_action_select_token_available")
-        information_exchange_text = kwargs.get("text")
-        reply_text = Message.SELECT_CRYPTO_EXCHANGE
-        reply_keyboard = []
+    """
+    ---------------------------------------------
+          Step 3
+    --------------------------------------------
+    """
+
+    def get_action_select_symbol_binance(self, **kwargs):
+        reply_text = "Please select symbol binance"
+        text = kwargs.get("text")
+        reply_keyboard_switch = {
+            TypeCryptoExchange.SPOT.variable: lambda: self.telegram_repository.get_reply_keyboard_symbol_binance(),
+            TypeCryptoExchange.FUTURES.variable: lambda: self.telegram_repository.get_reply_keyboard_symbol_binance(
+                is_trade_margin=True
+            ),
+            TypeCryptoExchange.INPUT_SYMBOL.variable: lambda: self.telegram_repository.create_reply_enter_reply()
+        }
+        self.save_action_user_to_database(
+            step_current=StepBot.THREE.value,
+            commands=CommandsEnum.SYMBOL_BINANCE.value,
+            text_input=f'{self.user.get("text_input")}_{text}'
+        )
+        reply_keyboard = reply_keyboard_switch.get(text)()
         return reply_text, reply_keyboard
 
     def get_action_select_crypto_exchange(self, **kwargs):
@@ -113,30 +149,72 @@ class TelegramService:
         crypto_exchanges = get_data_file_json(file_name)
         exchange_data = [dict(
             exchange=crypto_exchange.get("exchange"),
-            exchange_id=json.dumps(dict(layer_1=information_exchange_text, layer_2=crypto_exchange.get('exchange_id')))
+            exchange_id=crypto_exchange.get('exchange_id')
         ) for crypto_exchange in crypto_exchanges]
         exchange_data = get_unique_list_of_dict(exchange_data)
         exchange_data.append(dict(
             exchange=CommandsEnum.ALL,
-            exchange_id=f"{information_exchange_text}_{CommandsEnum.ALL}"
+            exchange_id=f"{CommandsEnum.ALL}"
         ))
-        reply_keyboard = self.create_reply_inline_keyboard(exchange_data,
-                                                           key_name="exchange",
-                                                           key_callback="exchange_id")
+        reply_keyboard = self.telegram_repository.create_reply_inline_keyboard(exchange_data,
+                                                                               key_name="exchange",
+                                                                               key_callback="exchange_id")
+        self.save_action_user_to_database(
+            step_current=StepBot.THREE.value,
+            commands=CommandsEnum.CRYPTO_EXCHANGE.value,
+            text_input=f'{self.user.get("text_input")}_{information_exchange_text}'
+        )
         return reply_text, reply_keyboard
+
+    """
+    ---------------------------------------------
+          Step 4
+    --------------------------------------------
+    """
 
     def get_action_get_time_exchange(self, **kwargs):
         logger.info(f"Telegram Service: get_action_get_time_exchange")
-        symbol_token = kwargs.get("text")
+        crypto_exchange_select = kwargs.get("text")
         reply_text = Message.SELECT_TIME_EXCHANGE
         times = [dict(
             time=time_exchange.name,
-            keyword=f"{symbol_token}_{str(time_exchange.minutes)}"
+            keyword=str(time_exchange.minutes)
         ) for time_exchange in TimeExchange]
-        reply_keyboard = self.create_reply_inline_keyboard(times,
-                                                           key_name="time",
-                                                           key_callback="keyword")
+        reply_keyboard = self.telegram_repository.create_reply_inline_keyboard(times,
+                                                                               key_name="time",
+                                                                               key_callback="keyword")
+
+        self.save_action_user_to_database(
+            step_current=StepBot.FOUR.value,
+            commands=CommandsEnum.TIME_EXCHANGE.value,
+            text_input=f'{self.user.get("text_input")}_{crypto_exchange_select}'
+        )
         return reply_text, reply_keyboard
+
+    """
+    ---------------------------------------------
+          Step 5 Final
+    --------------------------------------------
+    """
+
+    def get_data_by_action_exchange(self, text_input):
+        text = text_input.split('_')
+        if len(text) != 5:
+            raise ValueError("Data select error")
+
+        symbol, exchange_id = text[3], text[4]
+        address = symbol
+        return exchange_id, address
+
+    def get_info_data_by_user(self, time_ago):
+        # Exchange_binance_inputsymbol_bnb_binance
+        text_input = self.user.get("text_input")
+        type_select = text_input.split('_')[0]
+        switch_data = {
+            CommandsEnum.EXCHANGE: lambda: self.get_data_by_action_exchange(text_input),
+        }
+        exchange_id, address = switch_data.get(type_select)()
+        return exchange_id, address
 
     def get_action_analysis_crypto_exchange(self, **kwargs):
         logger.info(f"Telegram Service: get_action_analysis_crypto_exchange")
@@ -187,17 +265,39 @@ class TelegramService:
             ))
         return response_data
 
-    def create_data_tracking(self, user_id, username, text):
-        req_data = {
-            "user_id": user_id,
-            "username": username,
-            "token_tracker": text
-        }
-        user_tracking = self.user_service.create_action_tracking_telegram(req_data)
-        if "error" in user_tracking.keys():
+    """
+    ---------------------------------------------
+          Connection database
+    --------------------------------------------
+    """
+
+    def save_action_user_to_database(self, step_current, commands, text_input):
+        user_id = self.telegram_update.message.chat.id
+        user = self.user_service.get_user_telegram_tracker_by_user_id(user_id)
+        if user and "error" in user.keys():
             raise ValueError("Not create data tracker")
 
-        return user_tracking.get('uuid')
+        req_data = {
+            'user_id': str(user_id),
+            'username': self.telegram_update.message.chat.username,
+            'step_current': int(step_current),
+            'commands': str(commands),
+            'text_input': text_input
+        }
+        if not user:
+            self.user_service.create_action_tracking_telegram(req_data=req_data)
+        else:
+            self.user_service.update_user_telegram_tracker_by_user_id(user_id=user_id, req_data=req_data)
+
+    def get_action_user_from_database(self):
+        user = self.user_service.get_user_telegram_tracker_by_user_id(
+            user_id=self.telegram_update.message.chat.id
+        )
+        if not user or "error" in user.keys():
+            raise ValueError("Not create data tracker")
+
+        self.user = user
+        return user
 
     """
     ---------------------------------------------
@@ -223,29 +323,3 @@ class TelegramService:
             return False
 
         return True
-
-    @staticmethod
-    def create_reply_keyboard(options: list) -> list:
-        return [[option] for option in options]
-
-    @staticmethod
-    def create_reply_inline_keyboard(options: list, key_name: str, key_callback: str) -> list:
-        return [[
-            InlineKeyboardButton(option.get(key_name), callback_data=option.get(key_callback))
-        ] for option in options]
-
-    @classmethod
-    def append_to_reply_keyboard(cls, reply_keyboard, options: list, position=Position.TOP) -> list:
-        # Appending options to reply keyboard.
-        if not options:
-            return reply_keyboard
-        new_keyboard_options = cls.create_reply_keyboard(options)
-        if position == Position.TOP:
-            return new_keyboard_options + reply_keyboard
-        else:
-            return reply_keyboard + new_keyboard_options
-
-    @classmethod
-    def append_back_button(cls, reply_keyboard, text, position=Position.TOP):
-        button_text = CommandsEnum.BACK_BUTTON_PRETEXT + text
-        return cls.append_to_reply_keyboard(reply_keyboard, [button_text], position)
