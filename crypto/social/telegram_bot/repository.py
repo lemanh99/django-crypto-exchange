@@ -1,6 +1,7 @@
 from telegram import InlineKeyboardButton, ForceReply
 
 from crypto.coingecko.services import CoinGeckoService
+from crypto.core.utils.dict import get_dict_in_list
 from crypto.social.telegram_bot.contants import Position, CommandsEnum
 
 
@@ -67,3 +68,28 @@ class TelegramRepository:
                                                                     key_name="name",
                                                                     key_callback="name")
         return reply_keyboard
+
+    def get_data_by_action_exchange(self, text_input):
+        # Exchange_binance_inputsymbol_bnb_binance
+        text = text_input.split('_')
+        if len(text) != 5:
+            raise ValueError("Data select error")
+
+        symbol, exchange_id = text[3], text[4]
+        platform = "ethereum"
+        req_data = {
+            "trade_margin": False,
+            "platform": platform
+        }
+        token_address_info = self.coingecko.get_address_token_by_exchange_id(exchange_id='binance', req_data=req_data)
+        token_address = get_dict_in_list(key='binance_symbol', value=symbol, my_dictlist=token_address_info)
+        return exchange_id, token_address['platforms'].get(platform)
+
+    def get_info_data_by_user(self, user):
+        text_input = user.get("text_input")
+        type_select = text_input.split('_')[0]
+        switch_data = {
+            CommandsEnum.EXCHANGE: lambda: self.get_data_by_action_exchange(text_input),
+        }
+        exchange_id, address = switch_data.get(type_select)()
+        return exchange_id, address

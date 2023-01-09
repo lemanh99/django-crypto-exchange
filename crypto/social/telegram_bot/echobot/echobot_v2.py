@@ -53,7 +53,6 @@ def echo(update: Update, _: CallbackContext) -> None:
     text = text.replace(CommandsEnum.BACK_BUTTON_PRETEXT, "")
     telegram_service = TelegramService(update=update)
     user = telegram_service.get_action_user_from_database()
-    commands_before = user.get('commands')
     """
     ---------------------------------------------
           Step 1
@@ -91,7 +90,7 @@ def echo(update: Update, _: CallbackContext) -> None:
         remove_chat_buttons(bot=update.message.bot, chat_id=update.message.chat_id, text=Message.ENTER_ADDRESS)
         reply_markup = ForceReply(selective=True)
 
-    elif commands_before == CommandsEnum.SYMBOL_BINANCE:
+    elif user and user.get('commands') == CommandsEnum.SYMBOL_BINANCE:
         reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.CRYPTO_EXCHANGE, text=text
         )
@@ -121,6 +120,7 @@ def callback_echo(update, context):
     try:
         user = telegram_service.get_action_user_from_database()
         commands_before = user.get('commands')
+        # Type exchange
         if commands_before == CommandsEnum.EXCHANGE:
             if telegram_service.is_crypto_exchange_available(text=query_data):
                 reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
@@ -144,6 +144,8 @@ def callback_echo(update, context):
             reply_markup = InlineKeyboardMarkup(reply_keyboard)
             query.edit_message_text(text=f"You have selected {query_data}, {reply_text}", reply_markup=reply_markup)
 
+        # Type token
+
         elif commands_before == CommandsEnum.CRYPTO_EXCHANGE:
             reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
                 text_command=CommandsEnum.TIME_EXCHANGE, text=query_data
@@ -152,10 +154,12 @@ def callback_echo(update, context):
             query.edit_message_text(text=f"You have selected {query_data}, {reply_text}",
                                     reply_markup=reply_markup)
         elif commands_before == CommandsEnum.TIME_EXCHANGE:
+            query.edit_message_text(text=f"Waiting ...")
             query.edit_message_text(text=f"You select exchange {query_data}", parse_mode='HTML')
             data_analysis, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
                 text_command=CommandsEnum.ANALYSIS_CRYPTO_DATA, text=query_data
             )
+            query.edit_message_text(text=f"Information transaction")
             template = get_template("telegram/information_analysis_data.html")
             for data in data_analysis:
                 render_context = Context(dict(**data))

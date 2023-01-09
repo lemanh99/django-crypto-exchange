@@ -78,7 +78,7 @@ def callback_echo(update, context):
     print("callback_echo", query_data)
     print("Debug: Data callback", query)
     chat_id = query.message.chat.id
-    telegram_service = TelegramService()
+    telegram_service = TelegramService(update=update.callback_query)
     if telegram_service.is_token_address_available(text=query_data):
         reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.CRYPTO_EXCHANGE, text=query_data

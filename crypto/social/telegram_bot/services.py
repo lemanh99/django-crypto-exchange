@@ -197,32 +197,10 @@ class TelegramService:
     --------------------------------------------
     """
 
-    def get_data_by_action_exchange(self, text_input):
-        text = text_input.split('_')
-        if len(text) != 5:
-            raise ValueError("Data select error")
-
-        symbol, exchange_id = text[3], text[4]
-        address = symbol
-        return exchange_id, address
-
-    def get_info_data_by_user(self, time_ago):
-        # Exchange_binance_inputsymbol_bnb_binance
-        text_input = self.user.get("text_input")
-        type_select = text_input.split('_')[0]
-        switch_data = {
-            CommandsEnum.EXCHANGE: lambda: self.get_data_by_action_exchange(text_input),
-        }
-        exchange_id, address = switch_data.get(type_select)()
-        return exchange_id, address
-
     def get_action_analysis_crypto_exchange(self, **kwargs):
         logger.info(f"Telegram Service: get_action_analysis_crypto_exchange")
-        text = kwargs.get("text")
-        symbol_token, exchange_id, time_ago = text.split("_")[0], text.split("_")[1], text.split("_")[2]
-        file_name = f"{settings.BASE_DIR}/crypto/assets/token_exchange.json"
-        tokens_address = get_data_file_json(file_name)
-        token = get_dict_in_list(key="symbol", value=symbol_token, my_dictlist=tokens_address)
+        time_ago = kwargs.get("text")
+        exchange_id, address_token = self.telegram_repository.get_info_data_by_user(user=self.user)
         response_data = []
         if CommandsEnum.ALL in exchange_id:
             file_name = f"{settings.BASE_DIR}/crypto/assets/crypto_exchange_address.json"
@@ -232,7 +210,7 @@ class TelegramService:
 
         for crypto_exchange in crypto_exchanges:
             req_data = {
-                "token_address": token.get("address"),
+                "token_address": address_token,
                 "exchange_id": crypto_exchange.get("exchange_id"),
                 "min_order_exchange": 50000,
                 "time_ago": int(time_ago),
@@ -272,9 +250,11 @@ class TelegramService:
     """
 
     def save_action_user_to_database(self, step_current, commands, text_input):
+        logger.info(f"Telegram Service: save_action_user_to_database {step_current} - {commands} - {text_input}")
         user_id = self.telegram_update.message.chat.id
         user = self.user_service.get_user_telegram_tracker_by_user_id(user_id)
         if user and "error" in user.keys():
+            logger.info(f"Save action user to database")
             raise ValueError("Not create data tracker")
 
         req_data = {
@@ -293,8 +273,8 @@ class TelegramService:
         user = self.user_service.get_user_telegram_tracker_by_user_id(
             user_id=self.telegram_update.message.chat.id
         )
-        if not user or "error" in user.keys():
-            raise ValueError("Not create data tracker")
+        if user and "error" in user.keys():
+            raise ValueError("Get user from database failed")
 
         self.user = user
         return user
