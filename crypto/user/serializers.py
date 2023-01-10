@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from crypto.user.models import UserTelegramTracker
+from crypto.user.models import UserTelegramTracker, UserTokenTrigger
 
 
 class UserTelegramTrackerSerializer(serializers.ModelSerializer):
@@ -14,4 +14,16 @@ class UserTelegramTrackerSerializer(serializers.ModelSerializer):
             'text_input',
             'create_date',
             'expired_date'
+        )
+
+
+class UserTokenTriggerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserTokenTrigger
+        fields = (
+            'user_id',
+            'name',
+            'symbol',
+            'address',
+            'running',
         )

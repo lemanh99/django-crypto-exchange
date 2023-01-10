@@ -1,5 +1,3 @@
-from datetime import datetime, timezone, timedelta
-
 from django.db import models
 
 
@@ -16,4 +14,17 @@ class UserTelegramTracker(models.Model):
 
     class Meta:
         db_table = 'user_telegram_tracker'
+        app_label = 'user'
+
+
+class UserTokenTrigger(models.Model):
+    user_id = models.CharField(max_length=15, null=True, blank=True)
+    symbol = models.CharField(max_length=10)
+    name = models.CharField(max_length=10)
+    address = models.CharField(max_length=255)
+    running = models.BooleanField(default=False)
+    create_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'user_token_trigger'
         app_label = 'user'

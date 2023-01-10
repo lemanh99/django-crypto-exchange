@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'crypto.core',
     'crypto.binance',
     'crypto.user',
-    'crypto.master'
+    'crypto.master',
+    'crypto.tracking.blockchair'
 ]
 
 MIDDLEWARE = [
