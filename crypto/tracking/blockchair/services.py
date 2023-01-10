@@ -3,11 +3,15 @@ from datetime import datetime, timedelta
 
 import pytz
 from django.conf import settings
+from django.db.models import F
+from djongo.database import DatabaseError
 
 from crypto.core.common.cryptocurrency_exchange.coingecko import CoinGeckoMarketApi
 from crypto.core.common.tracking.blockchair import BlockChairTracking
 from crypto.core.utils.dict import get_dict_in_list, get_list_dict_in_list_by_value
 from crypto.core.utils.json import get_data_file_json
+from crypto.tracking.blockchair.models import BlockchairRequest
+from crypto.tracking.blockchair.serializers import BlockchairRequestSerializer
 
 
 class BlockchairService:
@@ -169,3 +173,26 @@ class BlockchairService:
             )
             data_analysis.append(data)
         return data_analysis
+
+    @classmethod
+    def get_information_request(cls):
+        try:
+            token_trigger = BlockchairRequest.objects.all()
+            return BlockchairRequestSerializer(token_trigger, many=True).data
+        except BlockchairRequest.DoesNotExist:
+            return None
+        except DatabaseError:
+            return dict(error="Database error")
+        except Exception as e:
+            return dict(error=str(e))
+
+    @classmethod
+    def update_number_request(cls, user_login="lexuanmanh101199@gmail.com"):
+        try:
+            BlockchairRequest.objects.filter(
+                user_login=user_login
+            ).update(number_request=F('number_request') + 1)
+        except DatabaseError:
+            return dict(error="Database error")
+        except Exception as e:
+            return dict(error=str(e))
