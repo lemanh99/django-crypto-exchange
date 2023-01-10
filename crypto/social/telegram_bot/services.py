@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 
 from django.conf import settings
 from telegram import Update, ForceReply
@@ -32,6 +33,7 @@ class TelegramService:
                 CommandsEnum.TOKEN: lambda: self.get_action_select_token(**kwargs),
                 CommandsEnum.EXCHANGE: lambda: self.get_action_select_exchange(),
                 CommandsEnum.ENTER_ADDRESS: lambda: self.get_action_enter_address(**kwargs),
+                CommandsEnum.TRIGGER: lambda: self.get_action_trigger(**kwargs),
                 # Step 2
                 CommandsEnum.TYPE_TOKEN_CRYPTO: lambda: self.get_action_type_crypto_in_crypto_exchange(**kwargs),
                 # Step 3
@@ -101,6 +103,12 @@ class TelegramService:
             text_input=CommandsEnum.ENTER_ADDRESS.value
         )
         return reply_text, ForceReply(selective=True)
+
+    def get_action_trigger(self, **kwargs):
+        logger.info(f"Telegram Service: get_action_enter_address")
+        reply_text = Message.TRIGGER_END
+        # Todo run trigger
+        return reply_text, []
 
     """
     ---------------------------------------------

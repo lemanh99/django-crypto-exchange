@@ -91,6 +91,12 @@ def echo(update: Update, _: CallbackContext) -> None:
         reply_text, reply_markup = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.ENTER_ADDRESS
         )
+    elif text in [CommandsEnum.TRIGGER, '/trigger']:
+        remove_chat_buttons(bot=update.message.bot, chat_id=update.message.chat_id, text="Hi !!")
+        reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+            text_command=CommandsEnum.TRIGGER
+        )
+        reply_markup = InlineKeyboardMarkup(reply_keyboard)
 
     elif user and (
             user.get('commands') == CommandsEnum.SYMBOL_BINANCE or user.get('commands') == CommandsEnum.ENTER_ADDRESS
@@ -166,7 +172,6 @@ def callback_echo(update, context):
                                     reply_markup=reply_markup)
         elif commands_before == CommandsEnum.TIME_EXCHANGE:
             query.edit_message_text(text=f"Waiting ...")
-            query.edit_message_text(text=f"You select exchange {query_data}", parse_mode='HTML')
             data_analysis, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
                 text_command=CommandsEnum.ANALYSIS_CRYPTO_DATA, text=query_data
             )
@@ -176,6 +181,8 @@ def callback_echo(update, context):
                 render_context = Context(dict(**data))
                 html = template.template.render(render_context)
                 context.bot.send_message(chat_id=query.message.chat.id, text=str(html), parse_mode='HTML')
+
+            query.edit_message_text(text=f"You select exchange {query_data}", parse_mode='HTML')
         else:
             query.answer(text=f"Please select again !")
     except Exception as e:
