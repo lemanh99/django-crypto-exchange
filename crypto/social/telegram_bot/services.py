@@ -165,7 +165,7 @@ class TelegramService:
         exchange_data = get_unique_list_of_dict(exchange_data)
         exchange_data.append(dict(
             exchange=CommandsEnum.ALL,
-            exchange_id=f"{CommandsEnum.ALL}"
+            exchange_id=CommandsEnum.ALL.value
         ))
         reply_keyboard = self.telegram_repository.create_reply_inline_keyboard(exchange_data,
                                                                                key_name="exchange",
@@ -216,6 +216,7 @@ class TelegramService:
         if CommandsEnum.ALL in exchange_id:
             file_name = f"{settings.BASE_DIR}/crypto/assets/crypto_exchange_address.json"
             crypto_exchanges = get_data_file_json(file_name)
+            crypto_exchanges = get_unique_list_of_dict(crypto_exchanges)
         else:
             crypto_exchanges = [dict(exchange_id=exchange_id)]
 
