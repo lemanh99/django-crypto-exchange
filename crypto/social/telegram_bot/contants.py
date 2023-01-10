@@ -11,6 +11,7 @@ class CommandsEnum(str, Enum):
     ADDRESS = "Address"
     EXCHANGE = "Exchange"
     TYPE_TOKEN_CRYPTO = "Type Token Exchange"
+    ENTER_ADDRESS = "Enter address"
     SYMBOL_BINANCE = "symbol_binance"
     CRYPTO_EXCHANGE = "Crypto Exchange"
     ANALYSIS_CRYPTO_DATA = "analysis crypto data"

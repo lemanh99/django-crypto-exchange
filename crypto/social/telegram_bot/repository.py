@@ -1,7 +1,9 @@
+from django.conf import settings
 from telegram import InlineKeyboardButton, ForceReply
 
 from crypto.coingecko.services import CoinGeckoService
 from crypto.core.utils.dict import get_dict_in_list
+from crypto.core.utils.json import get_data_file_json
 from crypto.social.telegram_bot.contants import Position, CommandsEnum
 
 
@@ -85,11 +87,32 @@ class TelegramRepository:
         token_address = get_dict_in_list(key='binance_symbol', value=symbol, my_dictlist=token_address_info)
         return exchange_id, token_address['platforms'].get(platform)
 
+    def get_data_by_action_token_address_available(self, text_input):
+        text = text_input.split('_')
+        if len(text) != 3:
+            raise ValueError("Data select error")
+
+        symbol_token, exchange_id = text[1], text[2]
+        file_name = f"{settings.BASE_DIR}/crypto/assets/token_exchange.json"
+        token_address_info = get_data_file_json(file_name)
+        token_address = get_dict_in_list(key="symbol", value=symbol_token, my_dictlist=token_address_info)
+        return exchange_id, token_address.get("address")
+
+    def get_data_by_action_enter_address(self, text_input):
+        text = text_input.split('_')
+        if len(text) != 3:
+            raise ValueError("Data select error")
+
+        token_address, exchange_id = text[1], text[2]
+        return exchange_id, token_address
+
     def get_info_data_by_user(self, user):
         text_input = user.get("text_input")
         type_select = text_input.split('_')[0]
         switch_data = {
             CommandsEnum.EXCHANGE: lambda: self.get_data_by_action_exchange(text_input),
+            CommandsEnum.TOKEN: lambda: self.get_data_by_action_token_address_available(text_input),
+            CommandsEnum.ENTER_ADDRESS: lambda: self.get_data_by_action_enter_address(text_input)
         }
         exchange_id, address = switch_data.get(type_select)()
         return exchange_id, address

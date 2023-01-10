@@ -87,14 +87,19 @@ def echo(update: Update, _: CallbackContext) -> None:
         reply_markup = InlineKeyboardMarkup(reply_keyboard)
 
     elif text in [CommandsEnum.ADDRESS, '/address']:
-        remove_chat_buttons(bot=update.message.bot, chat_id=update.message.chat_id, text=Message.ENTER_ADDRESS)
-        reply_markup = ForceReply(selective=True)
+        remove_chat_buttons(bot=update.message.bot, chat_id=update.message.chat_id, text='Hi !!')
+        reply_text, reply_markup = telegram_service.get_message_and_keyboards_by_text_command(
+            text_command=CommandsEnum.ENTER_ADDRESS
+        )
 
-    elif user and user.get('commands') == CommandsEnum.SYMBOL_BINANCE:
+    elif user and (
+            user.get('commands') == CommandsEnum.SYMBOL_BINANCE or user.get('commands') == CommandsEnum.ENTER_ADDRESS
+    ):
         reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.CRYPTO_EXCHANGE, text=text
         )
         reply_markup = InlineKeyboardMarkup(reply_keyboard)
+
 
     else:
         reply_text = Message.UNKNOWN_COMMAND.format(text=text)
@@ -145,6 +150,12 @@ def callback_echo(update, context):
             query.edit_message_text(text=f"You have selected {query_data}, {reply_text}", reply_markup=reply_markup)
 
         # Type token
+        elif commands_before == CommandsEnum.TOKEN:
+            reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+                text_command=CommandsEnum.CRYPTO_EXCHANGE, text=query_data
+            )
+            reply_markup = InlineKeyboardMarkup(reply_keyboard)
+            query.edit_message_text(text=f"You have selected {query_data}", reply_markup=reply_markup)
 
         elif commands_before == CommandsEnum.CRYPTO_EXCHANGE:
             reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(

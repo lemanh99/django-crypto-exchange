@@ -2,7 +2,7 @@ import json
 import logging
 
 from django.conf import settings
-from telegram import Update
+from telegram import Update, ForceReply
 
 from crypto.core.utils.dict import get_dict_in_list, get_unique_list_of_dict
 from crypto.core.utils.json import get_data_file_json
@@ -31,6 +31,7 @@ class TelegramService:
                 CommandsEnum.START: lambda: self.get_action_start(**kwargs),
                 CommandsEnum.TOKEN: lambda: self.get_action_select_token(**kwargs),
                 CommandsEnum.EXCHANGE: lambda: self.get_action_select_exchange(),
+                CommandsEnum.ENTER_ADDRESS: lambda: self.get_action_enter_address(**kwargs),
                 # Step 2
                 CommandsEnum.TYPE_TOKEN_CRYPTO: lambda: self.get_action_type_crypto_in_crypto_exchange(**kwargs),
                 # Step 3
@@ -90,6 +91,16 @@ class TelegramService:
             text_input=CommandsEnum.EXCHANGE.value
         )
         return reply_text, reply_keyboard
+
+    def get_action_enter_address(self, **kwargs):
+        logger.info(f"Telegram Service: get_action_enter_address")
+        reply_text = Message.ENTER_ADDRESS
+        self.save_action_user_to_database(
+            step_current=StepBot.TWO.value,
+            commands=CommandsEnum.ENTER_ADDRESS.value,
+            text_input=CommandsEnum.ENTER_ADDRESS.value
+        )
+        return reply_text, ForceReply(selective=True)
 
     """
     ---------------------------------------------
