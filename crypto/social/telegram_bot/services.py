@@ -33,7 +33,6 @@ class TelegramService:
                 CommandsEnum.TOKEN: lambda: self.get_action_select_token(**kwargs),
                 CommandsEnum.EXCHANGE: lambda: self.get_action_select_exchange(),
                 CommandsEnum.ENTER_ADDRESS: lambda: self.get_action_enter_address(**kwargs),
-                CommandsEnum.TRIGGER: lambda: self.get_action_trigger(**kwargs),
                 # Step 2
                 CommandsEnum.TYPE_TOKEN_CRYPTO: lambda: self.get_action_type_crypto_in_crypto_exchange(**kwargs),
                 # Step 3
@@ -42,7 +41,11 @@ class TelegramService:
                 # Step 4
                 CommandsEnum.TIME_EXCHANGE: lambda: self.get_action_get_time_exchange(**kwargs),
                 # Step 5 final
-                CommandsEnum.ANALYSIS_CRYPTO_DATA: lambda: self.get_action_analysis_crypto_exchange(**kwargs)
+                CommandsEnum.ANALYSIS_CRYPTO_DATA: lambda: self.get_action_analysis_crypto_exchange(**kwargs),
+                # Trigger
+                CommandsEnum.TRIGGER: lambda: self.get_action_trigger(**kwargs),
+                CommandsEnum.NOTIFICATION: lambda: self.get_action_notification_trigger(),
+                CommandsEnum.STOP_NOTIFICATION: lambda: self.get_action_stop_notification_trigger()
             }
             reply_text, reply_keyboard = commands.get(text_command)()
             return reply_text, reply_keyboard
@@ -105,10 +108,30 @@ class TelegramService:
         return reply_text, ForceReply(selective=True)
 
     def get_action_trigger(self, **kwargs):
-        logger.info(f"Telegram Service: get_action_enter_address")
-        reply_text = Message.TRIGGER_END
-        # Todo run trigger
-        return reply_text, []
+        running = kwargs.get('running')
+        logger.info(f"Telegram Service: get_action_trigger with running {running}")
+        reply_text = Message.SELECT_OPTION
+        if running:
+            action = [CommandsEnum.STOP_NOTIFICATION.value]
+        else:
+            action = [CommandsEnum.NOTIFICATION.value]
+
+        reply_keyboard = self.telegram_repository.create_reply_keyboard(action)
+        return reply_text, reply_keyboard
+
+    def get_action_notification_trigger(self, **kwargs):
+        logger.info(f"Telegram Service: get_action_trigger")
+        reply_text = Message.TRIGGER_START.value
+        action = [CommandsEnum.STOP_NOTIFICATION.value]
+        reply_keyboard = self.telegram_repository.create_reply_keyboard(action)
+        return reply_text, reply_keyboard
+
+    def get_action_stop_notification_trigger(self, **kwargs):
+        logger.info(f"Telegram Service: get_action_stop_notification_trigger")
+        reply_text = Message.TRIGGER_END.value
+        action = [CommandsEnum.NOTIFICATION.value]
+        reply_keyboard = self.telegram_repository.create_reply_keyboard(action)
+        return reply_text, reply_keyboard
 
     """
     ---------------------------------------------
