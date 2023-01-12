@@ -1,5 +1,7 @@
 import logging
+from datetime import datetime, timedelta
 
+import pytz
 from django.conf import settings
 from django.template import Context
 from django.template.loader import get_template
@@ -43,8 +45,25 @@ def error(update, context):
 
 
 # Run schedule
-def callback_alarm(context):
-    context.bot.send_message(chat_id=context.job.context, text='Wait for another 10 Seconds')
+def get_trigger(context):
+    logger.info(f"get trigger")
+    template = get_template("telegram/information_analysis_data.html")
+    telegram_service = context.job.context
+    min_order_exchange = 50000
+    data_analysis = telegram_service.get_trigger_data(min_order_exchange=min_order_exchange)
+
+    for data in data_analysis:
+        if data.get('number_in_big_order') or data.get('number_out_big_order'):
+            render_context = Context(dict(**data))
+            html = template.template.render(render_context)
+            context.bot.send_message(chat_id=telegram_service.telegram_update.message.chat.id,
+                                     text=str(html),
+                                     parse_mode='HTML')
+    datetime_from = datetime.now(pytz.utc) + timedelta(minutes=30)
+    datetime_from = datetime_from.astimezone(pytz.timezone('Asia/Ho_Chi_Minh')).strftime("%H:%M:%S %d-%m-%Y")
+    context.bot.send_message(chat_id=telegram_service.telegram_update.message.chat.id,
+                             text=f'Wait for another 30 minute, run next: {datetime_from}')
+    logger.info(f"get trigger end")
 
 
 def echo(update: Update, context: CallbackContext) -> None:
@@ -110,15 +129,21 @@ def echo(update: Update, context: CallbackContext) -> None:
         remove_chat_buttons(bot=update.message.bot, chat_id=update.message.chat_id, text="Hi !!")
         job_queue = context.job_queue
         reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
-            text_command=CommandsEnum.TRIGGER, running = not job_queue.scheduler.running
+            text_command=CommandsEnum.TRIGGER, running=not job_queue.scheduler.running
         )
         reply_markup = ReplyKeyboardMarkup(reply_keyboard, )
 
     elif text == CommandsEnum.NOTIFICATION:
         context.bot.send_message(chat_id=update.message.chat_id,
-                                 text='Wait for 10 seconds')
+                                 text='Start trigger: ')
         job_queue = context.job_queue
-        job_queue.run_repeating(callback_alarm, 10, context=update.message.chat_id)
+        try:
+            job_queue.run_repeating(get_trigger, 30*60, context=telegram_service)
+        except Exception:
+            context.bot.send_message(chat_id=update.message.chat_id,
+                                     text='Run schedule error unknown ')
+            context.job_queue.stop()
+
         reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.NOTIFICATION
         )

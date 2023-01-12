@@ -276,8 +276,8 @@ class TelegramService:
                 value_out_exchange=convert_string_to_money(data.get("value_out_exchange", 0)),
                 number_in_exchange=data.get("number_in_exchange"),
                 number_out_exchange=data.get("number_out_exchange"),
-                value_big_order=data.get("value_big_order"),
-                value_in_big_order=data.get("value_in_big_order"),
+                value_big_order=convert_string_to_money(data.get("value_big_order")),
+                value_in_big_order=convert_string_to_money(data.get("value_in_big_order")),
                 number_in_big_order=data.get("number_in_big_order"),
                 value_out_big_order=data.get("value_out_big_order"),
                 number_out_big_order=data.get("number_out_big_order"),
@@ -285,6 +285,31 @@ class TelegramService:
                 datetime_from=data.get("datetime_from"),
             ))
         return response_data
+
+    """
+    ---------------------------------------------
+          Get trigger
+    --------------------------------------------
+    """
+
+    def get_trigger_data(self, **kwargs):
+        logger.info(f"Telegram Service: get_trigger_data")
+        user_id = self.telegram_update.message.chat.id
+        min_order_exchange = kwargs.get("min_order_exchange")
+        user_service = UserService()
+        token_triggers = user_service.get_list_token_trigger_running_by_user_id(user_id)
+        data_analysis = []
+        for token_trigger in token_triggers:
+            req_data = {
+                'token_address': token_trigger.get('address'),
+                'name_exchange': 'Binance 14',
+                "min_order_exchange": int(min_order_exchange),
+                "time_ago": 60,
+            }
+            data = self.get_data_analysis_crypto_exchange(req_data)
+            data_analysis.extend(data)
+
+        return data_analysis
 
     """
     ---------------------------------------------
