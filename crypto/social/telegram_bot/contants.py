@@ -18,6 +18,8 @@ class CommandsEnum(str, Enum):
     ANALYSIS_CRYPTO_DATA = "analysis crypto data"
     TIME_EXCHANGE = "Time exchange"
     ALL = "All"
+    NOTIFICATION = "Notification"
+    STOP_NOTIFICATION = "Stop notification"
 
 
 class MenuTelegram(Enum):
@@ -41,7 +43,8 @@ class Message(str, Enum):
     SELECT_TOKEN = "please select token"
     ENTER_ADDRESS = "please enter address contract ethereum"
     EXCHANGE = "please select exchange crypto: "
-    TRIGGER_END = "trigger end"
+    TRIGGER_START = "Trigger start"
+    TRIGGER_END = "Trigger end"
     SELECT_CRYPTO_EXCHANGE = "please select crypto exchange"
     SELECT_TIME_EXCHANGE = "please select crypto exchange time"
     UNKNOWN_COMMAND = "OOps...We didn't recognise the command: {text}"

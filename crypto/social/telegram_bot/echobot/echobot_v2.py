@@ -1,10 +1,12 @@
 import logging
+from datetime import datetime, timedelta
 
+import pytz
 from django.conf import settings
 from django.template import Context
 from django.template.loader import get_template
 from telegram import Update, ForceReply, ReplyKeyboardMarkup, InlineKeyboardMarkup, ReplyKeyboardRemove
-from telegram.ext import Updater, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
+from telegram.ext import Updater, MessageHandler, Filters, CallbackContext, CallbackQueryHandler, CommandHandler
 
 from crypto.social.telegram_bot.contants import Message, CommandsEnum, MenuTelegram
 from crypto.social.telegram_bot.services import TelegramService
@@ -42,7 +44,29 @@ def error(update, context):
     logger.info('Update "%s" caused error "%s"', update, context.error)
 
 
-def echo(update: Update, _: CallbackContext) -> None:
+# Run schedule
+def get_trigger(context):
+    logger.info(f"get trigger")
+    template = get_template("telegram/information_analysis_data.html")
+    telegram_service = context.job.context
+    min_order_exchange = 50000
+    data_analysis = telegram_service.get_trigger_data(min_order_exchange=min_order_exchange)
+
+    for data in data_analysis:
+        if data.get('number_in_big_order') or data.get('number_out_big_order'):
+            render_context = Context(dict(**data))
+            html = template.template.render(render_context)
+            context.bot.send_message(chat_id=telegram_service.telegram_update.message.chat.id,
+                                     text=str(html),
+                                     parse_mode='HTML')
+    datetime_from = datetime.now(pytz.utc) + timedelta(minutes=30)
+    datetime_from = datetime_from.astimezone(pytz.timezone('Asia/Ho_Chi_Minh')).strftime("%H:%M:%S %d-%m-%Y")
+    context.bot.send_message(chat_id=telegram_service.telegram_update.message.chat.id,
+                             text=f'Wait for another 30 minute, run next: {datetime_from}')
+    logger.info(f"get trigger end")
+
+
+def echo(update: Update, context: CallbackContext) -> None:
     logger.info("Run echo")
     """Echo the user message."""
     text = update.message.text
@@ -91,12 +115,6 @@ def echo(update: Update, _: CallbackContext) -> None:
         reply_text, reply_markup = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.ENTER_ADDRESS
         )
-    elif text in [CommandsEnum.TRIGGER, '/trigger']:
-        remove_chat_buttons(bot=update.message.bot, chat_id=update.message.chat_id, text="Hi !!")
-        reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
-            text_command=CommandsEnum.TRIGGER
-        )
-        reply_markup = InlineKeyboardMarkup(reply_keyboard)
 
     elif user and (
             user.get('commands') == CommandsEnum.SYMBOL_BINANCE or user.get('commands') == CommandsEnum.ENTER_ADDRESS
@@ -106,6 +124,37 @@ def echo(update: Update, _: CallbackContext) -> None:
         )
         reply_markup = InlineKeyboardMarkup(reply_keyboard)
 
+    # Run schedule
+    elif text in [CommandsEnum.TRIGGER, '/trigger']:
+        remove_chat_buttons(bot=update.message.bot, chat_id=update.message.chat_id, text="Hi !!")
+        job_queue = context.job_queue
+        reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+            text_command=CommandsEnum.TRIGGER, running=not job_queue.scheduler.running
+        )
+        reply_markup = ReplyKeyboardMarkup(reply_keyboard, )
+
+    elif text == CommandsEnum.NOTIFICATION:
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text='Start trigger: ')
+        job_queue = context.job_queue
+        try:
+            job_queue.run_repeating(get_trigger, 30*60, context=telegram_service)
+        except Exception:
+            context.bot.send_message(chat_id=update.message.chat_id,
+                                     text='Run schedule error unknown ')
+            context.job_queue.stop()
+
+        reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+            text_command=CommandsEnum.NOTIFICATION
+        )
+        reply_markup = ReplyKeyboardMarkup(reply_keyboard)
+
+    elif text == CommandsEnum.STOP_NOTIFICATION:
+        context.job_queue.stop()
+        reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+            text_command=CommandsEnum.STOP_NOTIFICATION
+        )
+        reply_markup = ReplyKeyboardMarkup(reply_keyboard)
 
     else:
         reply_text = Message.UNKNOWN_COMMAND.format(text=text)
@@ -203,9 +252,10 @@ def run_telegram_bot_v2() -> None:
         # on different commands - answer in Telegram
 
         # on non command i.e message - echo the message on Telegram
-        dispatcher.add_handler(MessageHandler(Filters.text, echo))
+        # updater.dispatcher.add_handler(CommandHandler('st', start_run_scheduler, pass_job_queue=True))
+        # updater.dispatcher.add_handler(CommandHandler('sp', stop_run_scheduler, pass_job_queue=True))
+        dispatcher.add_handler(MessageHandler(Filters.text, echo, pass_update_queue=True))
         dispatcher.add_handler(CallbackQueryHandler(callback_echo))
-
         # log all errors
         dispatcher.add_error_handler(error)
         # Start the Bot
