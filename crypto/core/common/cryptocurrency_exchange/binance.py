@@ -41,9 +41,12 @@ class BinanceCryptoExchangeFutures:
         return self.binance_futures_client.mark_price(symbol)
 
 
-class BinanceCryptoExchangeConnector:
+class BinanceCryptoSpot:
 
     def __init__(self):
         api_secret = settings.BINANCE_CRYPTOCURRENCY_EXCHANGE_SECRET
         api_key = settings.BINANCE_CRYPTOCURRENCY_EXCHANGE_KEY
-        self.client = Spot(key=api_key, secret=api_secret)
+        self.client_spot = Spot(key=api_key, secret=api_secret)
+
+    def get_market_information(self):
+        return self.client_spot.exchange_info()

@@ -11,3 +11,17 @@ def get_data_file_json(file_name):
         data = json.load(json_file)
 
     return data
+
+
+def convert_string_to_json(text: str):
+    try:
+        return json.loads(text)
+    except json.decoder.JSONDecodeError:
+        return text
+
+
+def convert_json_to_string(text: dict):
+    try:
+        return json.dumps(text)
+    except json.decoder.JSONDecodeError:
+        return text

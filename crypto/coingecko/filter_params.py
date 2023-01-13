@@ -31,3 +31,17 @@ number_pages = OpenApiParameter(
     default=1,
     description=''
 )
+
+platform = OpenApiParameter(
+    'platform',
+    OpenApiTypes.STR,
+    OpenApiParameter.QUERY,
+    description=''
+)
+
+trade_margin = OpenApiParameter(
+    'trade_margin',
+    OpenApiTypes.BOOL,
+    OpenApiParameter.QUERY,
+    description=''
+)

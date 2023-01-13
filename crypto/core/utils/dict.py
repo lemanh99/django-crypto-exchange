@@ -1,8 +1,5 @@
 def get_dict_in_list(key, value, my_dictlist):
-    for entry in my_dictlist:
-        if entry[key] == value:
-            return entry
-    return {}
+    return next((entry for entry in my_dictlist if entry[key] == value), {})
 
 
 def get_list_dict_in_list_by_value(key, value, my_dictlist):

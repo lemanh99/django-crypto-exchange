@@ -39,3 +39,19 @@ def get_analysis_token_by_exchange(request):
     blockchair_service = BlockchairService()
     data = blockchair_service.get_analysis_token_by_exchange(request.GET)
     return make_response(data=data, app_status=200)
+
+
+@extend_schema(
+    methods=['GET'],
+    tags=['blockchair'],
+    parameters=[],
+    description='',
+    summary='',
+    responses={200: {}},
+)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_information_request(request):
+    blockchair_service = BlockchairService()
+    data = blockchair_service.update_number_request()
+    return make_response(data=data, app_status=200)
