@@ -1,0 +1,17 @@
+Time: {{ datetime_now }}
+Type  : {{ funding_rate_type }}
+Symbol  : {{ symbol }} ({{ price }})
+Future: {{ command_future }}
+<table>
+    <tr>
+        <th>Symbol</th>
+        <th>Funding rate</th>
+        <th>Price</th>
+        {% for fr in funding_rate_data %}
+            <tr>
+                {{ fr.symbol }}
+            </tr>
+            <tr>{{ fr.funding_rate }}</tr>
+            <td>{{ fr.price }}</td>
+        {% endfor %}
+</table>

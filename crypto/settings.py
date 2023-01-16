@@ -276,3 +276,7 @@ BLOCKCHAIR_API_KEY = env.str('BLOCKCHAIR_API_KEY', '')
 #                                    TELEGRAM BOT                                  #
 # ---------------------------------------------------------------------------- #
 TELEGRAM_BOT_API_KEY = env.str('TELEGRAM_BOT_API_KEY', '')
+# ---------------------------------------------------------------------------- #
+#                                    COIN_GLASS                                  #
+# ---------------------------------------------------------------------------- #
+COIN_GLASS_API_KEY = env.str('COIN_GLASS_API_KEY', '')
