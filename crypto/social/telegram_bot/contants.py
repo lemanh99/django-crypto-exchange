@@ -18,7 +18,8 @@ class CommandsEnum(str, Enum):
     ANALYSIS_CRYPTO_DATA = "analysis crypto data"
     TIME_EXCHANGE = "Time exchange"
     ALL = "All"
-    NOTIFICATION = "Notification"
+    NOTIFICATION = "Trigger realtime"
+    TRIGGER_FUNDING_RATE = "Trigger funding rate"
     STOP_NOTIFICATION = "Stop notification"
 
 

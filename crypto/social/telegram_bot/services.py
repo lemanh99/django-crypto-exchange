@@ -1,10 +1,13 @@
 import json
 import logging
 import time
+from datetime import datetime
 
+import pytz
 from django.conf import settings
 from telegram import Update, ForceReply
 
+from crypto.coinglass.services import CoinGlassService
 from crypto.core.utils.dict import get_dict_in_list, get_unique_list_of_dict
 from crypto.core.utils.json import get_data_file_json
 from crypto.core.utils.string import convert_string_to_money
@@ -45,6 +48,7 @@ class TelegramService:
                 # Trigger
                 CommandsEnum.TRIGGER: lambda: self.get_action_trigger(**kwargs),
                 CommandsEnum.NOTIFICATION: lambda: self.get_action_notification_trigger(),
+                CommandsEnum.TRIGGER_FUNDING_RATE: lambda: self.get_action_notification_trigger(),
                 CommandsEnum.STOP_NOTIFICATION: lambda: self.get_action_stop_notification_trigger()
             }
             reply_text, reply_keyboard = commands.get(text_command)()
@@ -111,11 +115,7 @@ class TelegramService:
         running = kwargs.get('running')
         logger.info(f"Telegram Service: get_action_trigger with running {running}")
         reply_text = Message.SELECT_OPTION
-        if running:
-            action = [CommandsEnum.STOP_NOTIFICATION.value]
-        else:
-            action = [CommandsEnum.NOTIFICATION.value]
-
+        action = [CommandsEnum.NOTIFICATION.value, CommandsEnum.TRIGGER_FUNDING_RATE.value]
         reply_keyboard = self.telegram_repository.create_reply_keyboard(action)
         return reply_text, reply_keyboard
 
@@ -129,7 +129,7 @@ class TelegramService:
     def get_action_stop_notification_trigger(self, **kwargs):
         logger.info(f"Telegram Service: get_action_stop_notification_trigger")
         reply_text = Message.TRIGGER_END.value
-        action = [CommandsEnum.NOTIFICATION.value]
+        action = [CommandsEnum.NOTIFICATION.value, CommandsEnum.TRIGGER_FUNDING_RATE.value]
         reply_keyboard = self.telegram_repository.create_reply_keyboard(action)
         return reply_text, reply_keyboard
 
@@ -310,6 +310,39 @@ class TelegramService:
             data_analysis.extend(data)
 
         return data_analysis
+
+    def get_data_trigger_funding_rate(self, **kwargs):
+        logger.info(f"Telegram Service: get_data_trigger_funding_rate")
+        infor_funding_rate = []
+        coin_glass_service = CoinGlassService()
+        funding_rates_data = coin_glass_service.get_funding_rate_exchange_crypto()
+        for exchange_name, funding_rate_data in funding_rates_data.items():
+            positive_funding_rate, negative_funding_rate = coin_glass_service.get_funding_rate_big(funding_rate_data)
+            if positive_funding_rate:
+                data = {
+                    'exchange_name': exchange_name,
+                    'datetime_now': datetime.now(pytz.utc).astimezone(pytz.timezone(
+                        'Asia/Ho_Chi_Minh')
+                    ).strftime("%H:%M:%S %d-%m-%Y"),
+                    'funding_rate_type': 'POSITIVE',
+                    'command_future': 'SHORT',
+                    'funding_rate_data': positive_funding_rate
+                }
+                infor_funding_rate.append(data)
+
+            if negative_funding_rate:
+                data = {
+                    'exchange_name': exchange_name,
+                    'datetime_now': datetime.now(pytz.utc).astimezone(pytz.timezone(
+                        'Asia/Ho_Chi_Minh')
+                    ).strftime("%H:%M:%S %d-%m-%Y"),
+                    'funding_rate_type': 'NEGATIVE',
+                    'command_future': 'LONG',
+                    'funding_rate_data': negative_funding_rate
+                }
+                infor_funding_rate.append(data)
+
+        return infor_funding_rate
 
     """
     ---------------------------------------------
