@@ -9,6 +9,7 @@ from telegram import Update, ForceReply, ReplyKeyboardMarkup, InlineKeyboardMark
 from telegram.ext import Updater, MessageHandler, Filters, CallbackContext, CallbackQueryHandler, CommandHandler
 
 from crypto.social.telegram_bot.contants import Message, CommandsEnum, MenuTelegram
+from crypto.social.telegram_bot.html.prettytable import convert_table_html_telegram
 from crypto.social.telegram_bot.services import TelegramService
 
 # Enable logging
@@ -45,7 +46,7 @@ def error(update, context):
 
 
 # Run schedule
-def get_trigger(context):
+def get_trigger_realtime_transaction_chain(context):
     logger.info(f"get trigger")
     template = get_template("telegram/information_analysis_data.html")
     telegram_service = context.job.context
@@ -64,6 +65,22 @@ def get_trigger(context):
     context.bot.send_message(chat_id=telegram_service.telegram_update.message.chat.id,
                              text=f'Wait for another 30 minute, run next: {datetime_from}')
     logger.info(f"get trigger end")
+
+def get_trigger_realtime_funding_rate(context):
+    logger.info(f"get trigger realtime funding rate")
+    template = get_template("telegram/notification_funding_rate.html")
+    telegram_service = context.job.context
+    info_funding_rate = telegram_service.get_data_trigger_funding_rate()
+    for data in info_funding_rate:
+        render_context = Context(dict(**data))
+        html = template.template.render(render_context)
+        table =  convert_table_html_telegram(columns=['Symbol','Rate','Price'],
+                                             attributes=['symbol', 'funding_rate', 'price'],
+                                             data=data['funding_rate_data'])
+        context.bot.send_message(chat_id=telegram_service.telegram_update.message.chat.id,
+                                 text=f'<pre>{html}\n{table}</pre>',
+                                 parse_mode='HTML')
+    logger.info(f"get trigger realtime funding rate")
 
 
 def echo(update: Update, context: CallbackContext) -> None:
@@ -88,7 +105,7 @@ def echo(update: Update, context: CallbackContext) -> None:
         reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.START
         )
-        reply_markup = ReplyKeyboardMarkup(reply_keyboard, )
+        reply_markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
 
     elif text == CommandsEnum.HELP:
         reply_text = Message.HELP_TEXT
@@ -131,30 +148,32 @@ def echo(update: Update, context: CallbackContext) -> None:
         reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.TRIGGER, running=not job_queue.scheduler.running
         )
-        reply_markup = ReplyKeyboardMarkup(reply_keyboard, )
+        reply_markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
 
     elif text == CommandsEnum.NOTIFICATION:
         context.bot.send_message(chat_id=update.message.chat_id,
                                  text='Start trigger: ')
         job_queue = context.job_queue
-        try:
-            job_queue.run_repeating(get_trigger, 30*60, context=telegram_service)
-        except Exception:
-            context.bot.send_message(chat_id=update.message.chat_id,
-                                     text='Run schedule error unknown ')
-            context.job_queue.stop()
-
+        job_queue.run_repeating(get_trigger_realtime_transaction_chain, 30*60, context=telegram_service)
         reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.NOTIFICATION
         )
         reply_markup = ReplyKeyboardMarkup(reply_keyboard)
+
+    elif text == CommandsEnum.TRIGGER_FUNDING_RATE:
+        job_queue = context.job_queue
+        job_queue.run_repeating(get_trigger_realtime_funding_rate, 1.5*60, context=telegram_service)
+        reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
+            text_command=CommandsEnum.TRIGGER_FUNDING_RATE
+        )
+        reply_markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
 
     elif text == CommandsEnum.STOP_NOTIFICATION:
         context.job_queue.stop()
         reply_text, reply_keyboard = telegram_service.get_message_and_keyboards_by_text_command(
             text_command=CommandsEnum.STOP_NOTIFICATION
         )
-        reply_markup = ReplyKeyboardMarkup(reply_keyboard)
+        reply_markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
 
     else:
         reply_text = Message.UNKNOWN_COMMAND.format(text=text)

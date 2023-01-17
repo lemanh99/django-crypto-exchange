@@ -99,3 +99,30 @@ class BlockchairApi(BaseApiProxy):
             self.params = dict(**params, key=api_key) if params else dict(key=api_key)
         else:
             self.params = dict(**params)
+
+
+class CoinGlassApi(BaseApiProxy):
+    def __init__(
+            self,
+            service_endpoint,
+            method="GET",
+            version="v2",
+            headers=None,
+            params=None,
+            data=None,
+            json=None,
+            api_key=None,
+    ):
+        super().__init__()
+        self.api_name = "Etherscan"
+        self.service_uri = "https://open-api.coinglass.com/public" + "/" + version + "/" + service_endpoint
+        self.method = method
+        self.headers = {
+            'accept': 'application/json',
+            'coinglassSecret': api_key
+        }
+        self.params = params
+        self.data = data
+        self.json = json
+        self.result = None
+        self.status_code = HTTP_200_OK
