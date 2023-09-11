@@ -211,7 +211,7 @@ LOGGING = {
             'level': "INFO",
             'propagate': True,
         },
-        'crypto': {
+        'crypto-exchange': {
             'handlers': ['console'],
             'level': env.str('LOGGING_CONSOLE_LEVEL', default='INFO'),
             'propagate': True,
