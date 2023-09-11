@@ -211,7 +211,7 @@ LOGGING = {
             'level': "INFO",
             'propagate': True,
         },
-        'CrossCloud': {
+        'crypto': {
             'handlers': ['console'],
             'level': env.str('LOGGING_CONSOLE_LEVEL', default='INFO'),
             'propagate': True,
